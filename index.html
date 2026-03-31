@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MyHDB Resident Services Portal — Marsiling–Yew Tee GRC TC Zone 4" />
+  <title>MyHDB Portal</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f5f5f0;
+      --color-background-tertiary: #eeede8;
+      --color-background-info: #e6f1fb;
+      --color-background-success: #e1f5ee;
+      --color-background-danger: #fcebeb;
+      --color-background-warning: #faeeda;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #5f5e5a;
+      --color-text-tertiary: #888780;
+      --color-text-info: #185fa5;
+      --color-text-danger: #a32d2d;
+      --color-text-success: #1d9e75;
+      --color-border-tertiary: rgba(26,26,24,0.15);
+      --color-border-secondary: rgba(26,26,24,0.3);
+      --color-border-primary: rgba(26,26,24,0.4);
+      --color-border-info: #b5d4f4;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --border-radius-xl: 16px;
+      --font-sans: 'DM Sans', system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-background-primary: #1e1e1c;
+        --color-background-secondary: #2a2a28;
+        --color-background-tertiary: #252523;
+        --color-background-info: #0c2a47;
+        --color-background-success: #062820;
+        --color-background-danger: #3a1010;
+        --color-background-warning: #3a2408;
+        --color-text-primary: #f0ede6;
+        --color-text-secondary: #b4b2a9;
+        --color-text-tertiary: #888780;
+        --color-text-info: #85b7eb;
+        --color-text-danger: #f09595;
+        --color-text-success: #5dcaa5;
+        --color-border-tertiary: rgba(240,237,230,0.15);
+        --color-border-secondary: rgba(240,237,230,0.3);
+        --color-border-primary: rgba(240,237,230,0.4);
+        --color-border-info: #185fa5;
+      }
+    }
+    html, body { height: 100%; font-family: var(--font-sans); background: var(--color-background-tertiary); color: var(--color-text-primary); }
+    #root { min-height: 100vh; }
+
+    input, select, textarea, button {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-text-primary);
+    }
+    input[type="text"], input[type="email"], input[type="password"], select, textarea {
+      width: 100%;
+      background: var(--color-background-primary);
+      border: 0.5px solid var(--color-border-secondary);
+      border-radius: var(--border-radius-md);
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      height: 36px;
+    }
+    textarea { height: auto; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--color-text-info);
+      box-shadow: 0 0 0 2px rgba(24,95,165,0.12);
+    }
+    input:disabled { opacity: 0.4; cursor: not-allowed; }
+    button { cursor: pointer; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 4px; }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .two-col-grid { grid-template-columns: 1fr !important; }
+      .four-col-grid { grid-template-columns: 1fr 1fr !important; }
+      .cat-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useRef, useEffect } = React;
+
+// ── i18n ──────────────────────────────────────────────────────────────────────
+const LANGS = { en:"English", zh:"中文", ms:"Melayu", ta:"தமிழ்" };
+const T = {
+  en: {
+    zone:"Marsiling–Yew Tee GRC · TC Zone 4",
+    navHome:"Home", navSubmit:"Submit Feedback", navTrack:"Track Status",
+    navAnnouncements:"Announcements", navAdmin:"Admin", navLogin:"Login", navMyCase:"My Cases",
+    navDemo:"💬 Demo",
+    homeTitle:"Resident Services Portal", homeSub:"Submit feedback, track cases, and stay updated on estate matters.",
+    submitTitle:"Submit Feedback", submitSub:"For block / estate issues, maintenance, or general enquiries",
+    catLabel:"Category", blockLabel:"Block", unitLabel:"Unit (optional)",
+    locationLabel:"Location", locationSub:"(optional — helps TC locate the issue faster)",
+    subjectLabel:"Subject", detailsLabel:"Details", priorityLabel:"Priority",
+    nameLabel:"Name", contactLabel:"Contact", anonLabel:"Submit anonymously",
+    low:"Low", medium:"Medium", high:"High",
+    submitBtn:"Submit Feedback", dispatchBtn:"Dispatch to",
+    successTitle:"Feedback Submitted", successAI:"AI has handled your request!",
+    refLabel:"Reference Number", submitAnother:"Submit Another",
+    trackTitle:"Track My Case", trackSub:"Enter your reference number to check your feedback status.",
+    trackBtn:"Search",
+    announcementsTitle:"Announcements", announcementsSub:"Official notices from the Town Council",
+    loginTitle:"Resident Login", loginSub:"Sign in to view your case history and get notified on updates.",
+    loginEmail:"Email / NRIC", loginPass:"Password", loginBtn:"Sign In",
+    loginNew:"New resident?", loginRegister:"Register here", loginDemo:"Demo: use any email + password",
+    registerTitle:"Create Account", registerName:"Full Name", registerEmail:"Email",
+    registerContact:"Mobile Number", registerBlock:"Your Block", registerPass:"Password",
+    registerBtn:"Create Account", registerBack:"Already have an account? Sign in",
+    myCasesTitle:"My Cases", noCases:"You haven't submitted any feedback yet.",
+    adminTitle:"Admin Dashboard", adminSub:"total", adminOpen:"open", adminAI:"AI auto-dispatched",
+    adminLogin:"Admin Login", adminLoginSub:"Town Council staff only · password: admin123",
+    adminPass:"Password", adminLoginBtn:"Log In", adminLogout:"Log out", adminWrongPass:"Incorrect password.",
+    analyticsTitle:"Analytics", allCases:"All Cases", aiDispatched:"AI Dispatched",
+    updateStatus:"Update Status", assignTo:"Assign To", saveChanges:"Save Changes", cancel:"Cancel",
+    open:"Open", inProgress:"In Progress", resolved:"Resolved",
+    notifTitle:"Notification sent", notifSMS:"SMS sent to",
+    detectLocation:"Detect my current location", detecting:"Detecting your location…",
+    locationDetected:"Location detected", locationDenied:"Location access denied. Please allow access and",
+    locationRetry:"try again", locationError:"Could not detect location.",
+    aiAutoLabel:"AI Auto-Dispatched", aiAutoBadge:"AUTO", noAction:"No action required unless overriding.",
+    receivedStep:"Received", inProgressStep:"In Progress", resolvedStep:"Resolved",
+    assigned:"Assigned to", expectedBy:"Expected by", status:"Status",
+    category:"Category", block:"Block", submitted:"Submitted", priority:"Priority",
+    resident:"Resident", contact:"Contact", details:"Details", location:"Location",
+    filterAll:"All Statuses", allCategories:"All Categories", allPriorities:"All Priorities",
+    casesOverTime:"Cases over time", categoryBreakdown:"Category breakdown",
+    autoDispatchRate:"Auto-dispatch rate", avgResolution:"Avg. resolution time",
+    casesByBlock:"Cases by block", hours:"hours", ofCasesAI:"of cases AI-handled",
+    pinned:"Pinned Notices", notifications:"Notifications", markAllRead:"Mark all read",
+    noNotifications:"No notifications yet",
+  },
+  zh: {
+    zone:"马林百列–义顺集选区 · 市镇理事会第4区",
+    navHome:"首页", navSubmit:"提交反馈", navTrack:"查询状态",
+    navAnnouncements:"公告", navAdmin:"管理员", navLogin:"登录", navMyCase:"我的案例", navDemo:"💬 演示",
+    homeTitle:"居民服务门户", homeSub:"提交反馈、跟踪案例并了解最新社区动态。",
+    submitTitle:"提交反馈", submitSub:"关于组屋或社区问题、维修或一般咨询",
+    catLabel:"类别", blockLabel:"楼栋", unitLabel:"单元（可选）",
+    locationLabel:"位置", locationSub:"（可选）", subjectLabel:"主题", detailsLabel:"详情", priorityLabel:"优先级",
+    nameLabel:"姓名", contactLabel:"联系方式", anonLabel:"匿名提交",
+    low:"低", medium:"中", high:"高", submitBtn:"提交反馈", dispatchBtn:"派遣至",
+    successTitle:"反馈已提交", successAI:"AI已处理您的请求！",
+    refLabel:"参考编号", submitAnother:"再次提交",
+    trackTitle:"查询我的案例", trackSub:"输入参考编号以查询反馈状态。", trackBtn:"搜索",
+    announcementsTitle:"公告", announcementsSub:"市镇理事会官方通知",
+    loginTitle:"居民登录", loginSub:"登录以查看案例历史。", loginEmail:"电子邮件", loginPass:"密码", loginBtn:"登录",
+    loginNew:"新居民？", loginRegister:"在此注册", loginDemo:"演示：使用任意邮件+密码",
+    registerTitle:"创建账户", registerName:"全名", registerEmail:"电子邮件",
+    registerContact:"手机号码", registerBlock:"您的楼栋", registerPass:"密码",
+    registerBtn:"创建账户", registerBack:"已有账户？登录",
+    myCasesTitle:"我的案例", noCases:"您尚未提交任何反馈。",
+    adminTitle:"管理员仪表板", adminSub:"总计", adminOpen:"待处理", adminAI:"AI自动派遣",
+    adminLogin:"管理员登录", adminLoginSub:"仅限工作人员 · 密码：admin123",
+    adminPass:"密码", adminLoginBtn:"登录", adminLogout:"退出", adminWrongPass:"密码错误。",
+    analyticsTitle:"数据分析", allCases:"所有案例", aiDispatched:"AI派遣",
+    updateStatus:"更新状态", assignTo:"分配给", saveChanges:"保存更改", cancel:"取消",
+    open:"待处理", inProgress:"处理中", resolved:"已解决",
+    notifTitle:"通知已发送", notifSMS:"短信已发送至",
+    detectLocation:"自动检测当前位置", detecting:"正在检测…",
+    locationDetected:"已检测到位置", locationDenied:"位置访问被拒绝，请允许并", locationRetry:"重试", locationError:"无法检测位置。",
+    aiAutoLabel:"AI自动派遣", aiAutoBadge:"自动", noAction:"无需操作。",
+    receivedStep:"已收到", inProgressStep:"处理中", resolvedStep:"已解决",
+    assigned:"分配给", expectedBy:"预计完成", status:"状态",
+    category:"类别", block:"楼栋", submitted:"提交时间", priority:"优先级",
+    resident:"居民", contact:"联系方式", details:"详情", location:"位置",
+    filterAll:"所有状态", allCategories:"所有类别", allPriorities:"所有优先级",
+    casesOverTime:"案例趋势", categoryBreakdown:"类别分布",
+    autoDispatchRate:"AI派遣率", avgResolution:"平均解决时间",
+    casesByBlock:"各楼栋案例", hours:"小时", ofCasesAI:"案例由AI处理",
+    pinned:"置顶公告", notifications:"通知", markAllRead:"全部标为已读", noNotifications:"暂无通知",
+  },
+  ms: {
+    zone:"GRC Marsiling–Yew Tee · Zon TC 4",
+    navHome:"Laman Utama", navSubmit:"Hantar Maklum Balas", navTrack:"Jejak Status",
+    navAnnouncements:"Pengumuman", navAdmin:"Admin", navLogin:"Log Masuk", navMyCase:"Kes Saya", navDemo:"💬 Demo",
+    homeTitle:"Portal Perkhidmatan Penduduk", homeSub:"Hantar maklum balas, jejak kes dan ikuti perkembangan estet.",
+    submitTitle:"Hantar Maklum Balas", submitSub:"Untuk isu blok / estet atau pertanyaan umum",
+    catLabel:"Kategori", blockLabel:"Nombor Blok", unitLabel:"Unit (pilihan)",
+    locationLabel:"Lokasi", locationSub:"(pilihan)", subjectLabel:"Subjek", detailsLabel:"Butiran", priorityLabel:"Keutamaan",
+    nameLabel:"Nama", contactLabel:"Nombor Hubungi", anonLabel:"Hantar secara tanpa nama",
+    low:"Rendah", medium:"Sederhana", high:"Tinggi", submitBtn:"Hantar", dispatchBtn:"Hantar kepada",
+    successTitle:"Maklum Balas Dihantar", successAI:"AI telah menguruskan permintaan anda!",
+    refLabel:"Nombor Rujukan", submitAnother:"Hantar Lagi",
+    trackTitle:"Jejak Kes Saya", trackSub:"Masukkan nombor rujukan.", trackBtn:"Cari",
+    announcementsTitle:"Pengumuman", announcementsSub:"Notis rasmi daripada Majlis Bandar",
+    loginTitle:"Log Masuk Penduduk", loginSub:"Log masuk untuk melihat sejarah kes.", loginEmail:"E-mel / NRIC", loginPass:"Kata Laluan", loginBtn:"Log Masuk",
+    loginNew:"Penduduk baru?", loginRegister:"Daftar di sini", loginDemo:"Demo: gunakan mana-mana e-mel",
+    registerTitle:"Buat Akaun", registerName:"Nama Penuh", registerEmail:"E-mel",
+    registerContact:"Nombor Telefon", registerBlock:"Blok Anda", registerPass:"Kata Laluan",
+    registerBtn:"Buat Akaun", registerBack:"Sudah ada akaun? Log masuk",
+    myCasesTitle:"Kes Saya", noCases:"Anda belum menghantar sebarang maklum balas.",
+    adminTitle:"Papan Pemuka Admin", adminSub:"jumlah", adminOpen:"terbuka", adminAI:"AI dihantar automatik",
+    adminLogin:"Log Masuk Admin", adminLoginSub:"Kakitangan TC sahaja · kata laluan: admin123",
+    adminPass:"Kata Laluan", adminLoginBtn:"Log Masuk", adminLogout:"Log Keluar", adminWrongPass:"Kata laluan salah.",
+    analyticsTitle:"Analitik", allCases:"Semua Kes", aiDispatched:"AI Dihantar",
+    updateStatus:"Kemas Kini Status", assignTo:"Tugaskan Kepada", saveChanges:"Simpan", cancel:"Batal",
+    open:"Terbuka", inProgress:"Sedang Diproses", resolved:"Selesai",
+    notifTitle:"Notifikasi dihantar", notifSMS:"SMS dihantar ke",
+    detectLocation:"Kesan lokasi semasa", detecting:"Mengesan lokasi…",
+    locationDetected:"Lokasi dikesan", locationDenied:"Akses lokasi dinafikan. Sila benarkan dan", locationRetry:"cuba lagi", locationError:"Tidak dapat mengesan lokasi.",
+    aiAutoLabel:"AI Dihantar Automatik", aiAutoBadge:"AUTO", noAction:"Tiada tindakan diperlukan.",
+    receivedStep:"Diterima", inProgressStep:"Sedang Diproses", resolvedStep:"Selesai",
+    assigned:"Ditugaskan kepada", expectedBy:"Dijangka", status:"Status",
+    category:"Kategori", block:"Blok", submitted:"Tarikh Hantar", priority:"Keutamaan",
+    resident:"Penduduk", contact:"Hubungi", details:"Butiran", location:"Lokasi",
+    filterAll:"Semua Status", allCategories:"Semua Kategori", allPriorities:"Semua Keutamaan",
+    casesOverTime:"Kes mengikut masa", categoryBreakdown:"Pecahan kategori",
+    autoDispatchRate:"Kadar auto-hantar", avgResolution:"Purata masa resolusi",
+    casesByBlock:"Kes mengikut blok", hours:"jam", ofCasesAI:"kes dikendalikan AI",
+    pinned:"Notis Disematkan", notifications:"Pemberitahuan", markAllRead:"Tandai semua dibaca", noNotifications:"Tiada pemberitahuan",
+  },
+  ta: {
+    zone:"மார்சிலிங்-யூ டீ GRC · TC மண்டலம் 4",
+    navHome:"முகப்பு", navSubmit:"கருத்து சமர்பிக்க", navTrack:"நிலை கண்காணிக்க",
+    navAnnouncements:"அறிவிப்புகள்", navAdmin:"நிர்வாகி", navLogin:"உள்நுழைய", navMyCase:"என் வழக்குகள்", navDemo:"💬 டெமோ",
+    homeTitle:"குடியிருப்பாளர் சேவை போர்டல்", homeSub:"கருத்து சமர்பிக்க, வழக்குகளை கண்காணிக்க மற்றும் சமீபத்திய தகவல்களை பெற.",
+    submitTitle:"கருத்து சமர்பிக்கவும்", submitSub:"பிளாக் அல்லது சமுதாய சிக்கல்களுக்கு",
+    catLabel:"வகை", blockLabel:"பிளாக் எண்", unitLabel:"அலகு (விரும்பினால்)",
+    locationLabel:"இடம்", locationSub:"(விரும்பினால்)", subjectLabel:"தலைப்பு", detailsLabel:"விவரங்கள்", priorityLabel:"முன்னுரிமை",
+    nameLabel:"பெயர்", contactLabel:"தொடர்பு எண்", anonLabel:"அநாமதேயமாக சமர்பிக்க",
+    low:"குறைந்த", medium:"நடுத்தர", high:"அதிக", submitBtn:"சமர்பிக்கவும்", dispatchBtn:"அனுப்பு",
+    successTitle:"கருத்து சமர்பிக்கப்பட்டது", successAI:"AI கையாண்டது!",
+    refLabel:"குறிப்பு எண்", submitAnother:"மீண்டும் சமர்பிக்கவும்",
+    trackTitle:"என் வழக்கை கண்காணிக்க", trackSub:"குறிப்பு எண்ணை உள்ளிடவும்.", trackBtn:"தேடு",
+    announcementsTitle:"அறிவிப்புகள்", announcementsSub:"நகர்ப்புற கவுன்சிலின் அறிவிப்புகள்",
+    loginTitle:"உள்நுழைவு", loginSub:"வழக்கு வரலாறு பார்க்கவும்.", loginEmail:"மின்னஞ்சல்", loginPass:"கடவுச்சொல்", loginBtn:"உள்நுழை",
+    loginNew:"புதிய பயனரா?", loginRegister:"பதிவு செய்யவும்", loginDemo:"டெமோ: எந்த மின்னஞ்சல் பயன்படுத்தவும்",
+    registerTitle:"கணக்கு உருவாக்கவும்", registerName:"முழு பெயர்", registerEmail:"மின்னஞ்சல்",
+    registerContact:"கைபேசி எண்", registerBlock:"உங்கள் பிளாக்", registerPass:"கடவுச்சொல்",
+    registerBtn:"கணக்கு உருவாக்கவும்", registerBack:"ஏற்கனவே கணக்கு உள்ளதா?",
+    myCasesTitle:"என் வழக்குகள்", noCases:"நீங்கள் இன்னும் கருத்து சமர்பிக்கவில்லை.",
+    adminTitle:"நிர்வாகி டாஷ்போர்டு", adminSub:"மொத்தம்", adminOpen:"திறந்த", adminAI:"AI தானியங்கி",
+    adminLogin:"நிர்வாகி உள்நுழைவு", adminLoginSub:"TC பணியாளர்கள் மட்டும் · கடவுச்சொல்: admin123",
+    adminPass:"கடவுச்சொல்", adminLoginBtn:"உள்நுழை", adminLogout:"வெளியேறு", adminWrongPass:"தவறான கடவுச்சொல்.",
+    analyticsTitle:"பகுப்பாய்வு", allCases:"அனைத்து வழக்குகள்", aiDispatched:"AI அனுப்பியது",
+    updateStatus:"நிலை புதுப்பிக்கவும்", assignTo:"ஒதுக்கவும்", saveChanges:"சேமிக்கவும்", cancel:"ரத்து",
+    open:"திறந்த", inProgress:"செயலில்", resolved:"தீர்க்கப்பட்டது",
+    notifTitle:"அறிவிப்பு அனுப்பப்பட்டது", notifSMS:"SMS அனுப்பப்பட்டது",
+    detectLocation:"இடத்தை கண்டறி", detecting:"கண்டறியப்படுகிறது…",
+    locationDetected:"இடம் கண்டறியப்பட்டது", locationDenied:"இட அணுகல் மறுக்கப்பட்டது. அனுமதித்து", locationRetry:"மீண்டும் முயற்சி", locationError:"இடத்தை கண்டறிய முடியவில்லை.",
+    aiAutoLabel:"AI தானியங்கி", aiAutoBadge:"தானியங்கி", noAction:"நடவடிக்கை தேவையில்லை.",
+    receivedStep:"பெறப்பட்டது", inProgressStep:"செயலில்", resolvedStep:"தீர்க்கப்பட்டது",
+    assigned:"ஒதுக்கப்பட்டது", expectedBy:"எதிர்பார்க்கப்படும்", status:"நிலை",
+    category:"வகை", block:"பிளாக்", submitted:"தேதி", priority:"முன்னுரிமை",
+    resident:"குடியிருப்பாளர்", contact:"தொடர்பு", details:"விவரங்கள்", location:"இடம்",
+    filterAll:"அனைத்து நிலைகள்", allCategories:"அனைத்து வகைகள்", allPriorities:"அனைத்து முன்னுரிமைகள்",
+    casesOverTime:"காலப்போக்கில் வழக்குகள்", categoryBreakdown:"வகை பிரிவு",
+    autoDispatchRate:"AI விகிதம்", avgResolution:"சராசரி நேரம்",
+    casesByBlock:"பிளாக் வாரியாக", hours:"மணி நேரம்", ofCasesAI:"AI கையாண்டது",
+    pinned:"பொருத்தப்பட்ட அறிவிப்புகள்", notifications:"அறிவிப்புகள்", markAllRead:"அனைத்தையும் படித்ததாக குறி", noNotifications:"அறிவிப்புகள் இல்லை",
+  },
+};
+
+// ── Seed data ─────────────────────────────────────────────────────────────────
+const SEED_FEEDBACK = [
+  { id:"FB-2025-10021", category:"Lift & Common Areas", block:"412", unit:"#08-22", subject:"Lift stuck between floors", details:"Lift B stuck between floors 7 and 8 for 2 days.", priority:"high", status:"in-progress", name:"Tan Wei Ming", contact:"9123 0001", date:"2025-03-24", anonymous:false, assignee:"Eng Team A", location:null, autoDispatched:false, userId:"user1" },
+  { id:"FB-2025-10022", category:"Cleanliness", block:"412", unit:"", subject:"Rubbish chute blocked on level 5", details:"The rubbish chute on level 5 is blocked and smells bad.", priority:"medium", status:"in-progress", name:"Siti Rahimah", contact:"9234 0002", date:"2025-03-25", anonymous:false, assignee:"Cleaner Team A", location:null, autoDispatched:true, dispatchedAt:"2025-03-25T09:12:00", eta:"2025-03-25T13:00:00", userId:"user2" },
+  { id:"FB-2025-10023", category:"Noise Complaint", block:"410", unit:"#12-01", subject:"Renovation noise past 9pm", details:"Unit 12-01 doing renovation past 9pm every night.", priority:"high", status:"open", name:"Anonymous", contact:"", date:"2025-03-25", anonymous:true, assignee:"", location:null, autoDispatched:false, userId:null },
+  { id:"FB-2025-10024", category:"Pest Control", block:"408", unit:"", subject:"Cockroach infestation at void deck", details:"Large number of cockroaches at void deck near bike racks.", priority:"medium", status:"resolved", name:"Ravi Kumar", contact:"9345 0003", date:"2025-03-20", anonymous:false, assignee:"Pest Control", location:null, autoDispatched:false, userId:"user1" },
+  { id:"FB-2025-10025", category:"Faulty Common Area Lighting", block:"415", unit:"", subject:"Corridor lights on L3 not working", details:"Three corridor lights on level 3 out for a week.", priority:"low", status:"resolved", name:"Lim Bee Geok", contact:"9456 0004", date:"2025-03-18", anonymous:false, assignee:"Electrical Maintenance Team", location:null, autoDispatched:true, dispatchedAt:"2025-03-18T08:00:00", eta:"2025-03-18T12:00:00", userId:"user2" },
+  { id:"FB-2025-10026", category:"Cleanliness", block:"410", unit:"", subject:"Litter at void deck", details:"Lots of litter at void deck near Block 410.", priority:"low", status:"resolved", name:"Ahmad Fadzil", contact:"9567 0005", date:"2025-03-22", anonymous:false, assignee:"Cleaner Team B", location:null, autoDispatched:true, dispatchedAt:"2025-03-22T08:30:00", eta:"2025-03-22T12:00:00", userId:"user1" },
+  { id:"FB-2025-10027", category:"Bulky Item Disposal", block:"413", unit:"#03-05", subject:"Old sofa left at staircase landing", details:"A large sofa abandoned at level 3 staircase of Block 413.", priority:"low", status:"in-progress", name:"Chen Mei Ling", contact:"9678 0006", date:"2025-03-28", anonymous:false, assignee:"Waste Collection Team", location:null, autoDispatched:true, dispatchedAt:"2025-03-28T10:00:00", eta:"2025-03-29T17:00:00", userId:"user2" },
+  { id:"FB-2025-10028", category:"Faulty Common Area Lighting", block:"411", unit:"", subject:"Broken lights at MSCP Level 2", details:"Four lights on level 2 of MSCP at Block 411 have been out for 5 days.", priority:"medium", status:"in-progress", name:"Priya Nair", contact:"9789 0007", date:"2025-03-29", anonymous:false, assignee:"Electrical Maintenance Team", location:null, autoDispatched:true, dispatchedAt:"2025-03-29T11:00:00", eta:"2025-03-29T15:00:00", userId:"user1" },
+  { id:"FB-2025-10029", category:"Parking", block:"410", unit:"", subject:"Illegal parking at handicap lot", details:"Silver Toyota Vios (SLA 1234X) parks at handicap lot daily.", priority:"medium", status:"open", name:"Ahmad Fadzil", contact:"9567 0005", date:"2025-03-30", anonymous:false, assignee:"", location:null, autoDispatched:false, userId:"user1" },
+  { id:"FB-2025-10030", category:"Water & Drainage", block:"408", unit:"", subject:"Clogged drain near Block 408", details:"Drain outside Block 408 overflowing during rain.", priority:"high", status:"open", name:"Ravi Kumar", contact:"9345 0003", date:"2025-03-30", anonymous:false, assignee:"", location:null, autoDispatched:false, userId:"user1" },
+];
+const SEED_ANNOUNCEMENTS = [
+  { id:1, title:"Lift Upgrading Programme — Block 410 & 412", content:"The HDB Lift Upgrading Programme for Blocks 410 and 412 will commence on 5 April 2025. Lifts on reduced capacity 8am–6pm weekdays.", date:"2025-03-28", pinned:true, tag:"Maintenance" },
+  { id:2, title:"Neighbourhood Spring Cleaning Day", content:"Join us on 6 April 2025, 9am–12pm at void deck Block 410. Volunteers welcome, light refreshments provided.", date:"2025-03-26", pinned:false, tag:"Community" },
+  { id:3, title:"Water Supply Interruption — 2 April 2025", content:"PUB maintenance affecting Blocks 408–415. Water off 10pm 2 April – 6am 3 April. Please store water.", date:"2025-03-25", pinned:true, tag:"Utilities" },
+  { id:4, title:"New Recycling Bin Stations Available", content:"Three new recycling stations at carparks of Blocks 408, 412, and 415.", date:"2025-03-20", pinned:false, tag:"Environment" },
+];
+const DEMO_USERS = {
+  "user1":{ id:"user1", name:"Tan Wei Ming", email:"weiming@email.com", contact:"9123 0001", block:"412" },
+  "user2":{ id:"user2", name:"Siti Rahimah", email:"siti@email.com", contact:"9234 0002", block:"412" },
+};
+
+const CATEGORIES = ["Lift & Common Areas","Cleanliness","Bulky Item Disposal","Faulty Common Area Lighting","Pest Control","Noise Complaint","Parking","Water & Drainage","Security","Others"];
+const CAT_ICONS = {"Lift & Common Areas":"🛗","Cleanliness":"🧹","Bulky Item Disposal":"🛋️","Faulty Common Area Lighting":"🔦","Pest Control":"🐜","Noise Complaint":"🔊","Parking":"🚗","Water & Drainage":"💧","Security":"🔒","Others":"📋"};
+const STATUS_COLORS = {open:"#185FA5","in-progress":"#BA7517",resolved:"#1D9E75"};
+const STATUS_BG = {open:"#E6F1FB","in-progress":"#FAEEDA",resolved:"#E1F5EE"};
+const STATUS_TEXT = {open:"#042C53","in-progress":"#412402",resolved:"#04342C"};
+const PRIORITY_COLOR = {low:"#1D9E75",medium:"#BA7517",high:"#A32D2D"};
+const PRIORITY_BG = {low:"#E1F5EE",medium:"#FAEEDA",high:"#FCEBEB"};
+const PRIORITY_TEXT = {low:"#04342C",medium:"#412402",high:"#501313"};
+const TAG_COLORS = {Maintenance:"#185FA5",Community:"#1D9E75",Utilities:"#BA7517",Environment:"#3B6D11"};
+const TAG_BG = {Maintenance:"#E6F1FB",Community:"#E1F5EE",Utilities:"#FAEEDA",Environment:"#EAF3DE"};
+const CAT_COLORS = ["#185FA5","#1D9E75","#BA7517","#A32D2D","#533AB7","#85500B","#0F6E56","#5A3D9A","#7A3B19","#444441"];
+
+function genRef(){ return "FB-"+new Date().getFullYear()+"-"+Math.floor(10000+Math.random()*90000); }
+function fmtDate(d){ return new Date(d).toLocaleDateString("en-SG",{day:"2-digit",month:"short",year:"numeric"}); }
+function fmtTime(d){ return new Date(d).toLocaleTimeString("en-SG",{hour:"2-digit",minute:"2-digit"}); }
+function fmtDateTime(d){ return fmtDate(d)+" · "+fmtTime(d); }
+function addHours(date,h){ return new Date(new Date(date).getTime()+h*3600000); }
+function nextWorkingDay(){ const d=new Date(); d.setHours(17,0,0,0); d.setDate(d.getDate()+(d.getDay()===5?3:d.getDay()===6?2:1)); return d.toISOString(); }
+
+const DISPATCH_CONFIG = {
+  "Cleanliness":{ teams:["Cleaner Team A","Cleaner Team B","Cleaner Team C"], icon:"🧹", label:"Cleaning Team", color:"#1D9E75", bg:"#E1F5EE", textColor:"#085041", borderColor:"#5DCAA5", getEta:(p)=>addHours(new Date(),{low:4,medium:2,high:1}[p]||4).toISOString(), etaLabel:(p)=>({low:"~4 hours",medium:"~2 hours",high:"~1 hour"}[p]||"~4 hours"), actionLabel:"Cleaning scheduled" },
+  "Bulky Item Disposal":{ teams:["Waste Collection Team"], icon:"🛋️", label:"Waste Collection Team", color:"#BA7517", bg:"#FAEEDA", textColor:"#412402", borderColor:"#FAC775", getEta:()=>nextWorkingDay(), etaLabel:()=>"Next working day", actionLabel:"Collection scheduled" },
+  "Faulty Common Area Lighting":{ teams:["Electrical Maintenance Team"], icon:"🔦", label:"Electrical Maintenance Team", color:"#185FA5", bg:"#E6F1FB", textColor:"#042C53", borderColor:"#B5D4F4", getEta:()=>addHours(new Date(),4).toISOString(), etaLabel:()=>"~4 hours", actionLabel:"Technician dispatched" },
+};
+const AUTO_DISPATCH_CATEGORIES = Object.keys(DISPATCH_CONFIG);
+function shouldAutoDispatch(fb){ return AUTO_DISPATCH_CATEGORIES.includes(fb.category); }
+function buildDispatch(fb){ const cfg=DISPATCH_CONFIG[fb.category]; const team=cfg.teams[Math.floor(Math.random()*cfg.teams.length)]; return {status:"in-progress",assignee:team,autoDispatched:true,dispatchedAt:new Date().toISOString(),eta:cfg.getEta(fb.priority)}; }
+
+// ── SYSTEM PROMPT for AI ──────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `You are a helpful assistant for the MyHDB Resident Services Portal, Marsiling–Yew Tee GRC, TC Zone 4, Singapore. Help residents with estate issues, feedback categories, HDB rules, and portal navigation. Auto-dispatch: Cleanliness→Cleaning Team(2-4h), Bulky Item→Waste Collection(next working day), Faulty Lighting→Electrical Team(4h). Emergencies: 995(SCDF) 999(Police). Renovation: Weekdays 9am-6pm, Saturdays 9am-1pm, no Sundays/PH. Keep replies concise and friendly. Reply in the language the user writes in.`;
+
+// ── Shared components ─────────────────────────────────────────────────────────
+function Badge({label,color,bg,text,small}){
+  return React.createElement("span",{style:{display:"inline-block",fontSize:small?10:11,fontWeight:500,padding:small?"1px 7px":"2px 9px",borderRadius:6,background:bg,color:text,border:`0.5px solid ${color}`}},label);
+}
+
+function NotifToast({toast,onClose}){
+  useEffect(()=>{ const t=setTimeout(onClose,4000); return()=>clearTimeout(t); },[]);
+  if(!toast) return null;
+  return React.createElement("div",{style:{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",background:"#1D9E75",color:"#fff",borderRadius:10,padding:"10px 18px",fontSize:13,zIndex:2000,display:"flex",gap:10,alignItems:"center",boxShadow:"0 4px 16px rgba(0,0,0,0.15)",maxWidth:360}},
+    React.createElement("span",null,"✉️"),
+    React.createElement("div",null,
+      React.createElement("div",{style:{fontWeight:500,marginBottom:2}},toast.title),
+      React.createElement("div",{style:{opacity:0.85,fontSize:12}},toast.body)
+    )
+  );
+}
+
+function NotificationBell({notifications,onMarkAll,t}){
+  const [open,setOpen]=useState(false);
+  const unread=notifications.filter(n=>!n.read).length;
+  return React.createElement("div",{style:{position:"relative"}},
+    React.createElement("button",{onClick:()=>setOpen(o=>!o),style:{background:"none",border:"none",cursor:"pointer",padding:"4px 8px",position:"relative",fontSize:18}},"🔔",unread>0&&React.createElement("span",{style:{position:"absolute",top:0,right:0,width:16,height:16,borderRadius:"50%",background:"#E24B4A",color:"#fff",fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}},unread)),
+    open&&React.createElement("div",{style:{position:"absolute",top:36,right:0,width:300,background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-secondary)",borderRadius:12,zIndex:200,boxShadow:"0 4px 20px rgba(0,0,0,0.1)",overflow:"hidden"}},
+      React.createElement("div",{style:{padding:"10px 14px",borderBottom:"0.5px solid var(--color-border-tertiary)",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        React.createElement("span",{style:{fontSize:13,fontWeight:500}},t.notifications),
+        unread>0&&React.createElement("button",{onClick:()=>{onMarkAll();setOpen(false);},style:{fontSize:11,color:"#185FA5",background:"none",border:"none",cursor:"pointer"}},t.markAllRead)
+      ),
+      React.createElement("div",{style:{maxHeight:280,overflowY:"auto"}},
+        notifications.length===0&&React.createElement("div",{style:{padding:"1.5rem",textAlign:"center",fontSize:13,color:"var(--color-text-secondary)"}},t.noNotifications),
+        notifications.map(n=>React.createElement("div",{key:n.id,style:{padding:"10px 14px",borderBottom:"0.5px solid var(--color-border-tertiary)",background:n.read?"var(--color-background-primary)":"var(--color-background-secondary)"}},
+          React.createElement("div",{style:{fontSize:12,fontWeight:500,marginBottom:2}},n.title),
+          React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)",marginBottom:3}},n.body),
+          React.createElement("div",{style:{fontSize:10,color:"var(--color-text-tertiary)"}},fmtDateTime(n.time))
+        ))
+      )
+    )
+  );
+}
+
+// ── NavBar ────────────────────────────────────────────────────────────────────
+function NavBar({page,setPage,lang,setLang,user,notifications,onMarkAll,t}){
+  const tabs=[
+    {id:"home",label:t.navHome},
+    {id:"submit",label:t.navSubmit},
+    {id:"track",label:t.navTrack},
+    {id:"announcements",label:t.navAnnouncements},
+    user&&{id:"mycases",label:t.navMyCase},
+    {id:"admin",label:t.navAdmin},
+    {id:"demo",label:t.navDemo},
+  ].filter(Boolean);
+  return React.createElement("nav",{style:{borderBottom:"0.5px solid var(--color-border-tertiary)",background:"var(--color-background-primary)",position:"sticky",top:0,zIndex:100}},
+    React.createElement("div",{style:{maxWidth:960,margin:"0 auto",padding:"0 1rem",display:"flex",alignItems:"center",overflowX:"auto",gap:0}},
+      React.createElement("div",{style:{fontWeight:600,fontSize:14,paddingRight:16,paddingTop:14,paddingBottom:14,flexShrink:0,borderRight:"0.5px solid var(--color-border-tertiary)",marginRight:4,whiteSpace:"nowrap"}},
+        React.createElement("span",{style:{color:"#185FA5"}},"My"),"HDB"
+      ),
+      tabs.map(tb=>React.createElement("button",{key:tb.id,onClick:()=>setPage(tb.id),style:{background:"none",border:"none",cursor:"pointer",fontFamily:"var(--font-sans)",fontSize:12,fontWeight:page===tb.id?500:400,color:page===tb.id?"var(--color-text-primary)":"var(--color-text-secondary)",padding:"14px 10px",borderBottom:page===tb.id?"2px solid #185FA5":"2px solid transparent",whiteSpace:"nowrap"}},
+        tb.label,
+        tb.id==="admin"&&React.createElement("span",{style:{fontSize:9,background:"#FCEBEB",color:"#A32D2D",borderRadius:4,padding:"1px 4px",marginLeft:4}},"TC"),
+        tb.id==="demo"&&React.createElement("span",{style:{fontSize:9,background:"#E6F1FB",color:"#042C53",borderRadius:4,padding:"1px 4px",marginLeft:4}},"NEW")
+      )),
+      React.createElement("div",{style:{flex:1}}),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,flexShrink:0}},
+        user&&React.createElement(NotificationBell,{notifications,onMarkAll,t}),
+        React.createElement("select",{value:lang,onChange:e=>setLang(e.target.value),style:{fontSize:12,padding:"4px 8px",border:"0.5px solid var(--color-border-tertiary)",borderRadius:6,background:"var(--color-background-secondary)",cursor:"pointer",height:"auto",width:"auto"}},
+          Object.entries(LANGS).map(([k,v])=>React.createElement("option",{key:k,value:k},v))
+        ),
+        React.createElement("button",{onClick:()=>setPage(user?"mycases":"login"),style:{fontSize:12,padding:"5px 12px",border:"0.5px solid var(--color-border-tertiary)",borderRadius:6,background:"var(--color-background-secondary)",cursor:"pointer",color:"var(--color-text-secondary)",whiteSpace:"nowrap"}},
+          user?"👤 "+user.name.split(" ")[0]:t.navLogin
+        )
+      )
+    )
+  );
+}
+
+// ── AI Chat bubble ────────────────────────────────────────────────────────────
+function AIChat({open,onClose}){
+  const [messages,setMessages]=useState([{role:"assistant",content:"Hi! I'm your HDB estate assistant 🏠\n\nCleanliness 🧹, Bulky Item Disposal 🛋️, and Faulty Lighting 🔦 are auto-dispatched immediately!\n\nWhat can I help you with today?"}]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const bottomRef=useRef(null);
+  useEffect(()=>{ if(open) bottomRef.current?.scrollIntoView({behavior:"smooth"}); },[messages,open]);
+  async function send(){
+    const text=input.trim(); if(!text||loading) return;
+    const next=[...messages,{role:"user",content:text}];
+    setMessages(next); setInput(""); setLoading(true);
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,system:SYSTEM_PROMPT,messages:next.map(m=>({role:m.role,content:m.content}))})});
+      const data=await res.json();
+      setMessages(prev=>[...prev,{role:"assistant",content:data.content?.map(c=>c.text||"").join("")||"Sorry, please try again."}]);
+    }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"Sorry, something went wrong."}]);}
+    setLoading(false);
+  }
+  if(!open) return null;
+  return React.createElement("div",{style:{position:"fixed",bottom:80,right:20,width:320,maxHeight:520,background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-secondary)",borderRadius:16,display:"flex",flexDirection:"column",zIndex:1000,overflow:"hidden",boxShadow:"0 8px 32px rgba(0,0,0,0.12)"}},
+    React.createElement("div",{style:{padding:"12px 16px",background:"#185FA5",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+        React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}},"🏠"),
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:13,fontWeight:500,color:"#fff"}},"HDB Assistant"),
+          React.createElement("div",{style:{fontSize:11,color:"rgba(255,255,255,0.75)"}},"AI-powered")
+        )
+      ),
+      React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.8)",fontSize:16}},"✕")
+    ),
+    React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"12px",display:"flex",flexDirection:"column",gap:10}},
+      messages.map((m,i)=>React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start"}},
+        React.createElement("div",{style:{maxWidth:"85%",padding:"9px 12px",borderRadius:m.role==="user"?"12px 12px 3px 12px":"12px 12px 12px 3px",background:m.role==="user"?"#185FA5":"var(--color-background-secondary)",color:m.role==="user"?"#fff":"var(--color-text-primary)",fontSize:13,lineHeight:1.55,whiteSpace:"pre-wrap"}},m.content)
+      )),
+      loading&&React.createElement("div",{style:{display:"flex",gap:4,padding:"10px 14px",borderRadius:"12px 12px 12px 3px",background:"var(--color-background-secondary)",width:"fit-content"}},
+        [0,1,2].map(i=>React.createElement("div",{key:i,style:{width:6,height:6,borderRadius:"50%",background:"var(--color-text-tertiary)",animation:`bounce 0.9s ${i*0.2}s infinite`}}))
+      ),
+      React.createElement("div",{ref:bottomRef})
+    ),
+    React.createElement("div",{style:{padding:"10px 12px",borderTop:"0.5px solid var(--color-border-tertiary)",display:"flex",gap:8,flexShrink:0}},
+      React.createElement("input",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&send(),placeholder:"Ask anything…",style:{flex:1,fontSize:13}}),
+      React.createElement("button",{onClick:send,disabled:loading||!input.trim(),style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:13,cursor:"pointer",opacity:(!input.trim()||loading)?0.5:1}},"→")
+    ),
+    React.createElement("div",{style:{padding:"4px 12px 10px",fontSize:10,color:"var(--color-text-tertiary)",textAlign:"center"}},"Emergencies: 995 (SCDF) · 999 (Police)")
+  );
+}
+
+// ── Pages (condensed versions of all v7 pages) ────────────────────────────────
+function HomePage({setPage,feedback,announcements,t}){
+  const open=feedback.filter(f=>f.status==="open").length;
+  const inProg=feedback.filter(f=>f.status==="in-progress").length;
+  const resolved=feedback.filter(f=>f.status==="resolved").length;
+  const aiD=feedback.filter(f=>f.autoDispatched).length;
+  const pinned=announcements.filter(a=>a.pinned);
+  return React.createElement("div",{style:{maxWidth:960,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{marginBottom:"2rem"}},
+      React.createElement("div",{style:{fontSize:11,fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--color-text-info)",background:"var(--color-background-info)",display:"inline-block",padding:"3px 10px",borderRadius:6,marginBottom:10}},t.zone),
+      React.createElement("h1",{style:{fontSize:26,fontWeight:500,marginBottom:6}},t.homeTitle),
+      React.createElement("p",{style:{fontSize:15,color:"var(--color-text-secondary)"}},t.homeSub)
+    ),
+    React.createElement("div",{className:"four-col-grid",style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"2rem"}},
+      [{label:t.open,value:open,color:"#185FA5"},{label:t.inProgress,value:inProg,color:"#BA7517"},{label:t.resolved,value:resolved,color:"#1D9E75"},{label:t.aiAutoLabel,value:aiD,color:"#533AB7"}].map(m=>
+        React.createElement("div",{key:m.label,style:{background:"var(--color-background-secondary)",borderRadius:"var(--border-radius-md)",padding:"1rem",border:"0.5px solid var(--color-border-tertiary)"}},
+          React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",marginBottom:4}},m.label),
+          React.createElement("div",{style:{fontSize:26,fontWeight:500,color:m.color}},m.value)
+        )
+      )
+    ),
+    React.createElement("div",{className:"two-col-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:"2rem"}},
+      React.createElement("button",{onClick:()=>setPage("submit"),style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:"var(--border-radius-lg)",padding:"1.25rem 1.5rem",cursor:"pointer",textAlign:"left"}},
+        React.createElement("div",{style:{fontSize:22,marginBottom:8}},"📝"),
+        React.createElement("div",{style:{fontSize:15,fontWeight:500,marginBottom:3}},t.navSubmit),
+        React.createElement("div",{style:{fontSize:12,opacity:0.8}},"Cleanliness, bulky items & lighting auto-handled by AI")
+      ),
+      React.createElement("button",{onClick:()=>setPage("track"),style:{background:"var(--color-background-secondary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-lg)",padding:"1.25rem 1.5rem",cursor:"pointer",textAlign:"left"}},
+        React.createElement("div",{style:{fontSize:22,marginBottom:8}},"🔍"),
+        React.createElement("div",{style:{fontSize:15,fontWeight:500,marginBottom:3}},t.navTrack),
+        React.createElement("div",{style:{fontSize:13,color:"var(--color-text-secondary)"}},"Check the status of your submitted feedback")
+      )
+    ),
+    pinned.length>0&&React.createElement("div",null,
+      React.createElement("div",{style:{fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}},"📌 "+t.pinned),
+      pinned.map(a=>React.createElement("div",{key:a.id,onClick:()=>setPage("announcements"),style:{cursor:"pointer",background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-md)",padding:"1rem 1.25rem",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}},
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:3}},a.title),
+          React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)"}},fmtDate(a.date))
+        ),
+        React.createElement("span",{style:{fontSize:11,background:TAG_BG[a.tag],color:TAG_COLORS[a.tag],padding:"2px 8px",borderRadius:5,flexShrink:0,fontWeight:500}},a.tag)
+      ))
+    )
+  );
+}
+
+function LocationPicker({location,setLocation,t}){
+  const [status,setStatus]=useState("idle");
+  async function detect(){
+    if(!navigator.geolocation){setStatus("error");return;} setStatus("loading");
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const {latitude,longitude}=pos.coords; let address=`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      try{const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);const data=await res.json();if(data.display_name)address=data.display_name;}catch(e){}
+      setLocation({latitude,longitude,address}); setStatus("success");
+    },err=>{setStatus(err.code===1?"denied":"error");},{enableHighAccuracy:true,timeout:10000});
+  }
+  if(status==="idle") return React.createElement("button",{type:"button",onClick:detect,style:{display:"flex",alignItems:"center",gap:8,padding:"9px 14px",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-md)",background:"var(--color-background-secondary)",cursor:"pointer",fontSize:13,color:"var(--color-text-secondary)",width:"100%"}},"📍 "+t.detectLocation);
+  if(status==="loading") return React.createElement("div",{style:{padding:"9px 14px",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-md)",background:"var(--color-background-secondary)",fontSize:13,color:"var(--color-text-secondary)"}},"⏳ "+t.detecting);
+  if(status==="success"&&location) return React.createElement("div",{style:{padding:"10px 14px",border:"0.5px solid #5DCAA5",borderRadius:"var(--border-radius-md)",background:"#E1F5EE"}},
+    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",gap:8}},
+      React.createElement("div",null,
+        React.createElement("div",{style:{fontSize:12,color:"#085041",fontWeight:500,marginBottom:3}},"📍 "+t.locationDetected),
+        React.createElement("div",{style:{fontSize:12,color:"#0F6E56",lineHeight:1.5}},location.address)
+      ),
+      React.createElement("button",{type:"button",onClick:()=>{setLocation(null);setStatus("idle");},style:{background:"none",border:"none",cursor:"pointer",fontSize:12,color:"#085041",flexShrink:0}},"✕")
+    )
+  );
+  return React.createElement("div",{style:{padding:"10px 14px",border:"0.5px solid #F09595",borderRadius:"var(--border-radius-md)",background:"#FCEBEB",fontSize:12,color:"#501313"}},
+    status==="denied"?t.locationDenied+" ":t.locationError+" ",
+    React.createElement("button",{type:"button",onClick:()=>setStatus("idle"),style:{background:"none",border:"none",cursor:"pointer",color:"#185FA5",fontSize:12,textDecoration:"underline"}},t.locationRetry)
+  );
+}
+
+function SubmitPage({onSubmit,user,t}){
+  const [cat,setCat]=useState(""); const [priority,setPriority]=useState("medium");
+  const [block,setBlock]=useState(user?.block||""); const [unit,setUnit]=useState("");
+  const [subject,setSubject]=useState(""); const [details,setDetails]=useState("");
+  const [name,setName]=useState(user?.name||""); const [contact,setContact]=useState(user?.contact||"");
+  const [anon,setAnon]=useState(false); const [location,setLocation]=useState(null);
+  const [submitted,setSubmitted]=useState(null); const [err,setErr]=useState("");
+  const willAuto=AUTO_DISPATCH_CATEGORIES.includes(cat);
+  function submit(){
+    if(!cat){setErr("Please select a category.");return;}
+    if(!block.trim()){setErr("Please enter your block number.");return;}
+    if(!subject.trim()){setErr("Please enter a subject.");return;}
+    if(!details.trim()){setErr("Please describe your issue.");return;}
+    if(!anon&&!name.trim()){setErr("Please enter your name or submit anonymously.");return;}
+    if(!anon&&!contact.trim()){setErr("Please enter your contact number.");return;}
+    const base={id:genRef(),category:cat,block,unit,subject,details,priority,name:anon?"Anonymous":name,contact:anon?"":contact,date:new Date().toISOString().slice(0,10),anonymous:anon,location,userId:user?.id||null};
+    const fb=shouldAutoDispatch(base)?{...base,...buildDispatch(base)}:{...base,status:"open",assignee:"",autoDispatched:false};
+    onSubmit(fb); setSubmitted(fb);
+  }
+  if(submitted){
+    const cfg=DISPATCH_CONFIG[submitted.category];
+    return React.createElement("div",{style:{maxWidth:580,margin:"2rem auto",padding:"0 1rem"}},
+      React.createElement("div",{style:{textAlign:"center",marginBottom:"1.5rem"}},
+        React.createElement("div",{style:{fontSize:44,marginBottom:12}},cfg?cfg.icon+"✅":"✅"),
+        React.createElement("h2",{style:{fontSize:20,fontWeight:500,marginBottom:6}},submitted.autoDispatched?t.successAI:t.successTitle)
+      ),
+      React.createElement("div",{style:{background:"var(--color-background-secondary)",borderRadius:12,padding:"1.25rem 1.5rem",marginBottom:"1.25rem"}},
+        React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)",marginBottom:4}},t.refLabel),
+        React.createElement("div",{style:{fontSize:22,fontWeight:500,color:"#185FA5",marginBottom:"1rem"}},submitted.id),
+        submitted.autoDispatched&&cfg&&React.createElement("div",null,
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:"1rem"}},
+            React.createElement("div",{style:{background:"var(--color-background-primary)",borderRadius:8,padding:"10px 12px",border:"0.5px solid var(--color-border-tertiary)"}},
+              React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",marginBottom:3}},t.assigned),
+              React.createElement("div",{style:{fontSize:13,fontWeight:500}},submitted.assignee)
+            ),
+            React.createElement("div",{style:{background:"var(--color-background-primary)",borderRadius:8,padding:"10px 12px",border:"0.5px solid var(--color-border-tertiary)"}},
+              React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",marginBottom:3}},t.expectedBy),
+              React.createElement("div",{style:{fontSize:13,fontWeight:500}},cfg.etaLabel(submitted.priority))
+            )
+          ),
+          React.createElement("div",{style:{background:cfg.bg,border:`0.5px solid ${cfg.borderColor}`,borderRadius:8,padding:"10px 12px",fontSize:12,color:cfg.textColor}},"📱 SMS & notification sent. Your case is In Progress.")
+        )
+      ),
+      React.createElement("div",{style:{textAlign:"center"}},
+        React.createElement("button",{onClick:()=>setSubmitted(null),style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"10px 24px",fontSize:14,cursor:"pointer"}},t.submitAnother)
+      )
+    );
+  }
+  return React.createElement("div",{style:{maxWidth:700,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{fontSize:22,fontWeight:500,marginBottom:4}},t.submitTitle),
+    React.createElement("p",{style:{fontSize:14,color:"var(--color-text-secondary)",marginBottom:"1.75rem"}},t.submitSub),
+    err&&React.createElement("div",{style:{background:"#FCEBEB",border:"0.5px solid #F09595",borderRadius:8,padding:"10px 14px",fontSize:13,color:"#501313",marginBottom:"1.25rem"}},err),
+    willAuto&&React.createElement("div",{style:{background:(DISPATCH_CONFIG[cat]||{}).bg,border:`0.5px solid ${(DISPATCH_CONFIG[cat]||{}).borderColor}`,borderRadius:8,padding:"10px 14px",fontSize:13,color:(DISPATCH_CONFIG[cat]||{}).textColor,marginBottom:"1.25rem",display:"flex",gap:10,alignItems:"center"}},
+      React.createElement("span",{style:{fontSize:18}},(DISPATCH_CONFIG[cat]||{}).icon+"🤖"),
+      React.createElement("span",null,React.createElement("strong",null,"AI will auto-dispatch")," this to ",(DISPATCH_CONFIG[cat]||{}).label,". ETA: ",cat&&DISPATCH_CONFIG[cat]?DISPATCH_CONFIG[cat].etaLabel(priority):"",".")
+    ),
+    React.createElement("div",{style:{marginBottom:"1.5rem"}},
+      React.createElement("div",{style:{fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:8}},t.catLabel+" *"),
+      React.createElement("div",{className:"cat-grid",style:{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:7}},
+        CATEGORIES.map(c=>{
+          const isAI=AUTO_DISPATCH_CATEGORIES.includes(c);
+          return React.createElement("button",{key:c,type:"button",onClick:()=>{setCat(c);setErr("");},style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 4px",border:cat===c?"1.5px solid #185FA5":"0.5px solid var(--color-border-tertiary)",borderRadius:8,background:cat===c?"#E6F1FB":"var(--color-background-primary)",cursor:"pointer",fontSize:10,color:cat===c?"#042C53":"var(--color-text-secondary)",position:"relative",textAlign:"center",lineHeight:1.3}},
+            isAI&&React.createElement("span",{style:{position:"absolute",top:3,right:3,fontSize:8,background:"#1D9E75",color:"#fff",padding:"1px 4px",borderRadius:8,fontWeight:500}},"AI"),
+            React.createElement("span",{style:{fontSize:16}},CAT_ICONS[c]),c
+          );
+        })
+      )
+    ),
+    React.createElement("div",{className:"two-col-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"1.25rem"}},
+      React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.blockLabel+" *"),React.createElement("input",{value:block,onChange:e=>setBlock(e.target.value),placeholder:"e.g. 412"})),
+      React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.unitLabel),React.createElement("input",{value:unit,onChange:e=>setUnit(e.target.value),placeholder:"e.g. #05-12"}))
+    ),
+    React.createElement("div",{style:{marginBottom:"1.25rem"}},
+      React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.locationLabel," ",React.createElement("span",{style:{fontSize:11,fontWeight:400,color:"var(--color-text-tertiary)"}},t.locationSub)),
+      React.createElement(LocationPicker,{location,setLocation,t})
+    ),
+    React.createElement("div",{style:{marginBottom:"1.25rem"}},React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.subjectLabel+" *"),React.createElement("input",{value:subject,onChange:e=>setSubject(e.target.value),placeholder:"Brief description"})),
+    React.createElement("div",{style:{marginBottom:"1.25rem"}},React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.detailsLabel+" *"),React.createElement("textarea",{value:details,onChange:e=>setDetails(e.target.value),placeholder:"Describe the issue in detail.",style:{width:"100%",minHeight:90,resize:"vertical"}})),
+    React.createElement("div",{style:{marginBottom:"1.25rem"}},
+      React.createElement("div",{style:{fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:8}},t.priorityLabel),
+      React.createElement("div",{style:{display:"flex",gap:8}},
+        ["low","medium","high"].map(p=>React.createElement("button",{key:p,type:"button",onClick:()=>setPriority(p),style:{flex:1,padding:"8px 0",border:priority===p?`1.5px solid ${PRIORITY_COLOR[p]}`:"0.5px solid var(--color-border-tertiary)",borderRadius:8,background:priority===p?PRIORITY_BG[p]:"var(--color-background-primary)",color:priority===p?PRIORITY_TEXT[p]:"var(--color-text-secondary)",fontSize:13,fontWeight:500,cursor:"pointer",textTransform:"capitalize"}},t[p]||p))
+      )
+    ),
+    React.createElement("div",{className:"two-col-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"1.25rem"}},
+      React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.nameLabel,!anon&&" *"),React.createElement("input",{value:name,onChange:e=>setName(e.target.value),disabled:anon,placeholder:anon?"Hidden":"Full name",style:{opacity:anon?0.4:1}})),
+      React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:500,color:"var(--color-text-secondary)",marginBottom:6}},t.contactLabel,!anon&&" *"),React.createElement("input",{value:contact,onChange:e=>setContact(e.target.value),disabled:anon,placeholder:anon?"Hidden":"9123 4567",style:{opacity:anon?0.4:1}}))
+    ),
+    React.createElement("label",{style:{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"var(--color-text-secondary)",cursor:"pointer",marginBottom:"1.75rem"}},
+      React.createElement("input",{type:"checkbox",checked:anon,onChange:e=>setAnon(e.target.checked),style:{width:"auto",accentColor:"#185FA5"}}),t.anonLabel
+    ),
+    React.createElement("div",{style:{borderTop:"0.5px solid var(--color-border-tertiary)",paddingTop:"1.25rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+      willAuto?React.createElement("div",{style:{fontSize:12,color:(DISPATCH_CONFIG[cat]||{}).color||"#1D9E75",display:"flex",alignItems:"center",gap:6}},"🤖 Will be auto-dispatched to ",(DISPATCH_CONFIG[cat]||{}).label||"team"):React.createElement("div",null),
+      React.createElement("button",{type:"button",onClick:submit,style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"10px 28px",fontSize:14,fontWeight:500,cursor:"pointer"}},willAuto?t.dispatchBtn+" "+(DISPATCH_CONFIG[cat]||{}).label+" →":t.submitBtn)
+    )
+  );
+}
+
+
+// ── AI Advice Panel ───────────────────────────────────────────────────────────
+function AIAdvicePanel({ feedbackCase }) {
+  const [advice, setAdvice] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+  const prevId = useRef(null);
+
+  useEffect(() => {
+    if (!feedbackCase) return;
+    if (feedbackCase.id === prevId.current) return;
+    prevId.current = feedbackCase.id;
+    fetchAdvice(feedbackCase);
+  }, [feedbackCase]);
+
+  async function fetchAdvice(fb) {
+    setLoading(true);
+    setAdvice(null);
+    try {
+      const prompt = `You are an HDB estate assistant helping a Singapore resident understand what to expect after submitting feedback.
+
+Feedback details:
+- Category: ${fb.category}
+- Subject: ${fb.subject}
+- Details: ${fb.details}
+- Priority: ${fb.priority}
+- Status: ${fb.status.replace("-", " ")}
+- Block: ${fb.block}${fb.unit ? " " + fb.unit : ""}
+- Assigned to: ${fb.assignee || "Not yet assigned"}
+${fb.autoDispatched ? "- This case was AUTO-DISPATCHED by AI to " + fb.assignee : ""}
+
+Generate a helpful, friendly advice panel for the resident while they wait for resolution.
+Respond ONLY with a valid JSON object in this exact format:
+{
+  "tcActions": ["action1", "action2", "action3"],
+  "residentTips": ["tip1", "tip2", "tip3"],
+  "estimatedTimeline": "e.g. 1–3 working days",
+  "urgencyNote": "one sentence note if any urgent action needed, or empty string",
+  "closingMessage": "one friendly sentence reassuring the resident"
+}
+
+Make tcActions specific to this category (${fb.category}).
+Make residentTips practical and specific — things they can actually do right now.
+Keep each item concise (under 20 words).
+No markdown, no explanation, just the JSON.`;
+
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 600,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const raw = data.content?.map(c => c.text || "").join("").trim();
+      const clean = raw.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      setAdvice(parsed);
+    } catch (e) {
+      // Fallback static advice based on category
+      const fallbacks = {
+        "Cleanliness": { tcActions: ["Dispatch cleaning crew to the location", "Inspect and clear reported area", "Log completion and update case status"], residentTips: ["Avoid the affected area if there is a hygiene concern", "Take a photo of the issue for your records", "Note if the problem worsens or spreads"], estimatedTimeline: "2–4 hours", urgencyNote: "", closingMessage: "Our cleaning team is on the way and will resolve this shortly." },
+        "Noise Complaint": { tcActions: ["Issue advisory notice to the unit", "Verify renovation permit validity", "Escalate to enforcement if repeated"], residentTips: ["Document noise with a short video or recording", "Note date, time, and duration of each incident", "Avoid direct confrontation with the neighbour"], estimatedTimeline: "1–3 working days", urgencyNote: "", closingMessage: "We take noise complaints seriously and will follow up promptly." },
+        "Lift & Common Areas": { tcActions: ["Dispatch maintenance technician to inspect", "Arrange temporary alternative access if needed", "Coordinate with lift contractor for repairs"], residentTips: ["Use the staircase in the meantime if safe to do so", "Avoid overloading the lift once restored", "Report any further issues immediately"], estimatedTimeline: "4–24 hours depending on severity", urgencyNote: "If the lift is completely out of service, please call the TC hotline directly.", closingMessage: "Our technician will attend to this as soon as possible." },
+        "default": { tcActions: ["Review and assess your feedback", "Assign to the relevant team", "Monitor and follow up on resolution"], residentTips: ["Keep your reference number handy for follow-ups", "Take photos or notes of the issue", "Contact the TC if the situation worsens"], estimatedTimeline: "2–5 working days", urgencyNote: "", closingMessage: "Thank you for helping us keep our estate in good condition." }
+      };
+      setAdvice(fallbacks[fb.category] || fallbacks["default"]);
+    }
+    setLoading(false);
+  }
+
+  if (!feedbackCase) return null;
+
+  return React.createElement("div", { style: { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-info)", borderRadius: 12, overflow: "hidden", marginTop: "1.25rem" } },
+    // Header
+    React.createElement("div", { onClick: () => setExpanded(e => !e), style: { padding: "12px 16px", background: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" } },
+      React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+        React.createElement("div", { style: { width: 28, height: 28, borderRadius: 8, background: "#185FA5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 } }, "🤖"),
+        React.createElement("div", null,
+          React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: "#042C53" } }, "AI Case Advisor"),
+          React.createElement("div", { style: { fontSize: 11, color: "#185FA5" } }, "Personalised guidance for your case")
+        )
+      ),
+      React.createElement("span", { style: { fontSize: 12, color: "#185FA5", userSelect: "none" } }, expanded ? "▲" : "▼")
+    ),
+
+    expanded && React.createElement("div", { style: { padding: "1.25rem 1.5rem" } },
+      loading && React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", padding: "1.5rem 0", gap: 12 } },
+        React.createElement("div", { style: { display: "flex", gap: 6 } },
+          [0,1,2].map(i => React.createElement("div", { key: i, style: { width: 8, height: 8, borderRadius: "50%", background: "#185FA5", animation: `bounce 0.9s ${i*0.2}s infinite` } }))
+        ),
+        React.createElement("div", { style: { fontSize: 13, color: "var(--color-text-secondary)" } }, "Generating personalised advice for your case…")
+      ),
+
+      !loading && advice && React.createElement("div", null,
+        // TC Actions section
+        React.createElement("div", { style: { marginBottom: "1.25rem" } },
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap:8, marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 16 } }, "🏢"),
+            React.createElement("div", { style: { fontSize: 14, fontWeight: 500, color: "var(--color-text-primary)" } }, "What happens next (Town Council actions)")
+          ),
+          advice.tcActions.map((action, i) =>
+            React.createElement("div", { key: i, style: { display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 } },
+              React.createElement("div", { style: { width: 20, height: 20, borderRadius: "50%", background: "#E6F1FB", border: "0.5px solid #B5D4F4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "#185FA5", flexShrink: 0, marginTop: 1 } }, i + 1),
+              React.createElement("div", { style: { fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.55 } }, action)
+            )
+          )
+        ),
+
+        // Divider
+        React.createElement("div", { style: { height: "0.5px", background: "var(--color-border-tertiary)", margin: "1rem 0" } }),
+
+        // Resident tips section
+        React.createElement("div", { style: { marginBottom: "1.25rem" } },
+          React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 16 } }, "💡"),
+            React.createElement("div", { style: { fontSize: 14, fontWeight: 500, color: "var(--color-text-primary)" } }, "What you can do now (optional)")
+          ),
+          advice.residentTips.map((tip, i) =>
+            React.createElement("div", { key: i, style: { display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 } },
+              React.createElement("div", { style: { width: 6, height: 6, borderRadius: "50%", background: "#BA7517", flexShrink: 0, marginTop: 6 } }),
+              React.createElement("div", { style: { fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.55 } }, tip)
+            )
+          )
+        ),
+
+        // Timeline + urgency
+        React.createElement("div", { style: { display: "grid", gridTemplateColumns: advice.urgencyNote ? "1fr 1fr" : "1fr", gap: 10, marginBottom: "1rem" } },
+          React.createElement("div", { style: { background: "var(--color-background-secondary)", borderRadius: 8, padding: "10px 12px" } },
+            React.createElement("div", { style: { fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 3 } }, "⏱ Estimated timeline"),
+            React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" } }, advice.estimatedTimeline)
+          ),
+          advice.urgencyNote && React.createElement("div", { style: { background: "#FAEEDA", border: "0.5px solid #FAC775", borderRadius: 8, padding: "10px 12px" } },
+            React.createElement("div", { style: { fontSize: 11, color: "#412402", marginBottom: 3 } }, "⚠️ Note"),
+            React.createElement("div", { style: { fontSize: 13, color: "#412402", lineHeight: 1.5 } }, advice.urgencyNote)
+          )
+        ),
+
+        // Closing message
+        React.createElement("div", { style: { background: "#E1F5EE", border: "0.5px solid #5DCAA5", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#085041", display: "flex", gap: 8, alignItems: "center" } },
+          React.createElement("span", { style: { fontSize: 16, flexShrink: 0 } }, "✅"),
+          advice.closingMessage
+        )
+      )
+    )
+  );
+}
+
+function TrackPage({feedback,t}){
+  const [query,setQuery]=useState(""); const [result,setResult]=useState(null); const [notFound,setNotFound]=useState(false);
+  const STEPS=["open","in-progress","resolved"]; const STEP_LABELS=[t.receivedStep,t.inProgressStep,t.resolvedStep];
+  function search(){ const q=query.trim().toUpperCase(); const found=feedback.find(f=>f.id.toUpperCase()===q); if(found){setResult(found);setNotFound(false);}else{setResult(null);setNotFound(true);} }
+  const cfg=result&&DISPATCH_CONFIG[result.category];
+  // Show advice only for open/in-progress cases (not resolved)
+  return React.createElement("div",{style:{maxWidth:620,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{fontSize:22,fontWeight:500,marginBottom:4}},t.trackTitle),
+    React.createElement("p",{style:{fontSize:14,color:"var(--color-text-secondary)",marginBottom:"1.75rem"}},t.trackSub),
+    React.createElement("div",{style:{display:"flex",gap:8,marginBottom:"1.5rem"}},
+      React.createElement("input",{value:query,onChange:e=>setQuery(e.target.value),onKeyDown:e=>e.key==="Enter"&&search(),placeholder:"e.g. FB-2025-10022",style:{flex:1}}),
+      React.createElement("button",{onClick:search,style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"0 20px",fontSize:14,cursor:"pointer"}},t.trackBtn)
+    ),
+    notFound&&React.createElement("div",{style:{background:"#FCEBEB",border:"0.5px solid #F09595",borderRadius:8,padding:"12px 16px",fontSize:13,color:"#501313"}},"No feedback found for that reference number."),
+    result&&React.createElement("div",null,
+      result.autoDispatched&&cfg&&React.createElement("div",{style:{background:cfg.bg,border:`0.5px solid ${cfg.borderColor}`,borderRadius:12,padding:"1.25rem 1.5rem",marginBottom:"1.5rem"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:12}},
+          React.createElement("div",{style:{width:38,height:38,borderRadius:10,background:cfg.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}},"🤖"),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:4}},
+              React.createElement("div",{style:{fontSize:14,fontWeight:500,color:cfg.textColor}},t.aiAutoLabel),
+              React.createElement("span",{style:{fontSize:10,background:cfg.color,color:"#fff",padding:"1px 8px",borderRadius:20,fontWeight:500}},t.aiAutoBadge)
+            ),
+            React.createElement("div",{style:{fontSize:13,color:cfg.color,lineHeight:1.55}},cfg.actionLabel+" — ",t.assigned.toLowerCase()," ",React.createElement("strong",null,result.assignee)," · ETA: ",cfg.etaLabel(result.priority))
+          )
+        )
+      ),
+      React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-lg)",padding:"1.25rem 1.5rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"1rem"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",marginBottom:3}},result.id),
+            React.createElement("div",{style:{fontSize:16,fontWeight:500}},result.subject)
+          ),
+          React.createElement(Badge,{label:result.status.replace("-"," "),color:STATUS_COLORS[result.status],bg:STATUS_BG[result.status],text:STATUS_TEXT[result.status]})
+        ),
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1.25rem 0",position:"relative"}},
+          React.createElement("div",{style:{position:"absolute",top:"50%",left:0,right:0,height:1,background:"var(--color-border-tertiary)",zIndex:0}}),
+          STEPS.map((s,i)=>{ const done=STEPS.indexOf(result.status)>=i; return React.createElement("div",{key:s,style:{display:"flex",flexDirection:"column",alignItems:"center",gap:6,zIndex:1}},
+            React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:done?"#185FA5":"var(--color-background-secondary)",border:done?"none":"0.5px solid var(--color-border-secondary)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:done?"#fff":"var(--color-text-tertiary)",fontWeight:500}},done?"✓":i+1),
+            React.createElement("div",{style:{fontSize:11,color:done?"#185FA5":"var(--color-text-tertiary)",fontWeight:done?500:400}},STEP_LABELS[i])
+          ); })
+        ),
+        React.createElement("table",{style:{width:"100%",fontSize:13}},
+          [[t.category,result.category],[t.block,result.block+(result.unit?" "+result.unit:"")],[t.submitted,fmtDate(result.date)],[t.priority,result.priority],result.assignee?[t.assigned,result.assignee]:null,result.location?[t.location,result.location.address]:null].filter(Boolean).map(([k,v])=>
+            React.createElement("tr",{key:k},React.createElement("td",{style:{color:"var(--color-text-secondary)",padding:"5px 0",width:"40%"}},k),React.createElement("td",{style:{fontWeight:500}},v))
+          )
+        )
+      )
+    ),
+    result&&result.status!=="resolved"&&React.createElement(AIAdvicePanel,{feedbackCase:result}),
+    React.createElement("div",{style:{marginTop:"1.5rem",padding:"1rem",background:"var(--color-background-secondary)",borderRadius:8,fontSize:13,color:"var(--color-text-secondary)"}},React.createElement("strong",{style:{color:"var(--color-text-primary)"}},"Demo: "),"Try FB-2025-10021 (lift), FB-2025-10023 (noise), FB-2025-10029 (parking)")
+  );
+}
+
+function AnnouncementsPage({announcements,t}){
+  const [filter,setFilter]=useState("All");
+  const tags=["All","Maintenance","Community","Utilities","Environment"];
+  const sorted=[...(filter==="All"?announcements:announcements.filter(a=>a.tag===filter))].sort((a,b)=>(b.pinned-a.pinned)||(new Date(b.date)-new Date(a.date)));
+  return React.createElement("div",{style:{maxWidth:700,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{fontSize:22,fontWeight:500,marginBottom:4}},t.announcementsTitle),
+    React.createElement("p",{style:{fontSize:14,color:"var(--color-text-secondary)",marginBottom:"1.5rem"}},t.announcementsSub),
+    React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.5rem"}},tags.map(tag=>React.createElement("button",{key:tag,onClick:()=>setFilter(tag),style:{padding:"5px 14px",border:filter===tag?"1.5px solid #185FA5":"0.5px solid var(--color-border-tertiary)",borderRadius:20,background:filter===tag?"#E6F1FB":"var(--color-background-primary)",color:filter===tag?"#042C53":"var(--color-text-secondary)",fontSize:13,cursor:"pointer"}},tag))),
+    sorted.map(a=>React.createElement("div",{key:a.id,style:{background:"var(--color-background-primary)",border:a.pinned?"0.5px solid #B5D4F4":"0.5px solid var(--color-border-tertiary)",borderRadius:8,padding:"1rem 1.25rem",marginBottom:10}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6,gap:12}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},a.pinned&&React.createElement("span",{style:{fontSize:11}},"📌"),React.createElement("div",{style:{fontSize:15,fontWeight:500}},a.title)),
+        React.createElement("span",{style:{fontSize:11,background:TAG_BG[a.tag],color:TAG_COLORS[a.tag],padding:"2px 8px",borderRadius:5,flexShrink:0,fontWeight:500}},a.tag)
+      ),
+      React.createElement("p",{style:{fontSize:13,color:"var(--color-text-secondary)",lineHeight:1.6,marginBottom:8}},a.content),
+      React.createElement("div",{style:{fontSize:12,color:"var(--color-text-tertiary)"}},fmtDate(a.date))
+    ))
+  );
+}
+
+function LoginPage({onLogin,t}){
+  const [mode,setMode]=useState("login");
+  const [email,setEmail]=useState(""); const [pass,setPass]=useState(""); const [name,setName]=useState("");
+  const [contact,setContact]=useState(""); const [block,setBlock]=useState(""); const [err,setErr]=useState("");
+  function login(){ if(!email.trim()||!pass.trim()){setErr("Please fill in all fields.");return;} const ex=Object.values(DEMO_USERS).find(u=>u.email===email.trim()); onLogin(ex||{id:"user_"+Date.now(),name:email.split("@")[0],email:email.trim(),contact:"",block:""}); }
+  function register(){ if(!name.trim()||!email.trim()||!pass.trim()){setErr("Please fill in required fields.");return;} onLogin({id:"user_"+Date.now(),name:name.trim(),email:email.trim(),contact:contact.trim(),block:block.trim()}); }
+  return React.createElement("div",{style:{maxWidth:400,margin:"3rem auto",padding:"0 1rem"}},
+    React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:16,padding:"2rem"}},
+      React.createElement("div",{style:{textAlign:"center",marginBottom:"1.5rem"}},
+        React.createElement("div",{style:{fontSize:32,marginBottom:8}},"🏠"),
+        React.createElement("div",{style:{fontSize:20,fontWeight:500}},mode==="login"?t.loginTitle:t.registerTitle)
+      ),
+      err&&React.createElement("div",{style:{background:"#FCEBEB",border:"0.5px solid #F09595",borderRadius:8,padding:"8px 12px",fontSize:13,color:"#501313",marginBottom:"1rem"}},err),
+      mode==="register"&&React.createElement("div",{style:{marginBottom:"1rem"}},React.createElement("label",{style:{display:"block",fontSize:13,color:"var(--color-text-secondary)",marginBottom:5}},t.registerName+" *"),React.createElement("input",{value:name,onChange:e=>setName(e.target.value),placeholder:"Full name"})),
+      React.createElement("div",{style:{marginBottom:"1rem"}},React.createElement("label",{style:{display:"block",fontSize:13,color:"var(--color-text-secondary)",marginBottom:5}},mode==="login"?t.loginEmail:t.registerEmail+" *"),React.createElement("input",{value:email,onChange:e=>setEmail(e.target.value),placeholder:"name@email.com"})),
+      mode==="register"&&React.createElement("div",{className:"two-col-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:"1rem"}},
+        React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,color:"var(--color-text-secondary)",marginBottom:5}},t.registerContact),React.createElement("input",{value:contact,onChange:e=>setContact(e.target.value),placeholder:"9123 4567"})),
+        React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:13,color:"var(--color-text-secondary)",marginBottom:5}},t.registerBlock),React.createElement("input",{value:block,onChange:e=>setBlock(e.target.value),placeholder:"e.g. 412"}))
+      ),
+      React.createElement("div",{style:{marginBottom:"1.25rem"}},React.createElement("label",{style:{display:"block",fontSize:13,color:"var(--color-text-secondary)",marginBottom:5}},(mode==="login"?t.loginPass:t.registerPass)+" *"),React.createElement("input",{type:"password",value:pass,onChange:e=>setPass(e.target.value),onKeyDown:e=>e.key==="Enter"&&(mode==="login"?login():register()),placeholder:"••••••••"})),
+      React.createElement("button",{onClick:mode==="login"?login:register,style:{width:"100%",background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:14,fontWeight:500,cursor:"pointer",marginBottom:"1rem"}},mode==="login"?t.loginBtn:t.registerBtn),
+      React.createElement("div",{style:{textAlign:"center",fontSize:12,color:"var(--color-text-secondary)"}},
+        mode==="login"?React.createElement("span",null,t.loginNew," ",React.createElement("button",{onClick:()=>{setMode("register");setErr("");},style:{background:"none",border:"none",color:"#185FA5",cursor:"pointer",fontSize:12,textDecoration:"underline"}},t.loginRegister)):React.createElement("button",{onClick:()=>{setMode("login");setErr("");},style:{background:"none",border:"none",color:"#185FA5",cursor:"pointer",fontSize:12,textDecoration:"underline"}},t.registerBack)
+      ),
+      mode==="login"&&React.createElement("div",{style:{marginTop:12,padding:"8px 12px",background:"var(--color-background-secondary)",borderRadius:8,fontSize:11,color:"var(--color-text-tertiary)",textAlign:"center"}},t.loginDemo)
+    )
+  );
+}
+
+function MyCasesPage({user,feedback,t}){
+  const mine=feedback.filter(f=>f.userId===user.id);
+  return React.createElement("div",{style:{maxWidth:720,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:"1.5rem"}},
+      React.createElement("div",{style:{width:44,height:44,borderRadius:"50%",background:"#E6F1FB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}},"👤"),
+      React.createElement("div",null,React.createElement("div",{style:{fontSize:20,fontWeight:500}},user.name),React.createElement("div",{style:{fontSize:13,color:"var(--color-text-secondary)"}},user.email,user.block?" · Blk "+user.block:""))
+    ),
+    React.createElement("div",{style:{fontSize:16,fontWeight:500,marginBottom:"1rem"}},t.myCasesTitle," ",React.createElement("span",{style:{fontSize:13,color:"var(--color-text-secondary)",fontWeight:400}},"("+mine.length+")")),
+    mine.length===0&&React.createElement("div",{style:{padding:"2rem",textAlign:"center",fontSize:14,color:"var(--color-text-secondary)",background:"var(--color-background-secondary)",borderRadius:12}},t.noCases),
+    mine.map(f=>React.createElement(MyCaseCard,{key:f.id,fb:f}))
+  );
+}
+
+function MyCaseCard({fb}){
+  const [expanded,setExpanded]=useState(false);
+  return React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,marginBottom:10,overflow:"hidden"}},
+    React.createElement("div",{onClick:()=>setExpanded(e=>!e),style:{padding:"1rem 1.25rem",cursor:"pointer"}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:6}},
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:2,display:"flex",alignItems:"center",gap:6}},fb.subject,fb.autoDispatched&&React.createElement("span",{style:{fontSize:10,background:"#1D9E75",color:"#fff",padding:"1px 6px",borderRadius:8,fontWeight:500}},"AI")),
+          React.createElement("div",{style:{fontSize:11,color:"var(--color-text-tertiary"}},fb.id," · ",CAT_ICONS[fb.category]," ",fb.category," · Blk ",fb.block)
+        ),
+        React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
+          React.createElement(Badge,{label:fb.status.replace("-"," "),color:STATUS_COLORS[fb.status],bg:STATUS_BG[fb.status],text:STATUS_TEXT[fb.status]}),
+          React.createElement("span",{style:{fontSize:11,color:"var(--color-text-tertiary)"}},fmtDate(fb.date)),
+          React.createElement("span",{style:{fontSize:10,color:"#185FA5",marginTop:2}},fb.status!=="resolved"?"Tap for AI advice ▾":"")
+        )
+      ),
+      fb.autoDispatched&&fb.assignee&&React.createElement("div",{style:{fontSize:12,color:DISPATCH_CONFIG[fb.category]?.color||"#1D9E75",marginTop:4}},"→ ",fb.assignee," · ",DISPATCH_CONFIG[fb.category]?.etaLabel(fb.priority)||"")
+    ),
+    expanded&&fb.status!=="resolved"&&React.createElement(AIAdvicePanel,{feedbackCase:fb})
+  );
+}
+
+function AdminPage({feedback,setFeedback,onToast,t}){
+  const [authed,setAuthed]=useState(false); const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState(false);
+  const [selected,setSelected]=useState(null); const [tab,setTab]=useState("cases");
+  const [fStatus,setFStatus]=useState("all"); const [fCat,setFCat]=useState("all"); const [fPri,setFPri]=useState("all");
+  const [newStatus,setNewStatus]=useState(""); const [newAssignee,setNewAssignee]=useState("");
+  function login(){ if(pw==="admin123"){setAuthed(true);setPwErr(false);}else setPwErr(true); }
+  function updateCase(){
+    setFeedback(prev=>prev.map(f=>f.id===selected.id?{...f,status:newStatus||f.status,assignee:newAssignee||f.assignee}:f));
+    onToast({title:t.notifTitle,body:t.notifSMS+" "+(selected.contact||"resident")+" · "+selected.name});
+    setSelected(null);
+  }
+  if(!authed) return React.createElement("div",{style:{maxWidth:400,margin:"4rem auto",padding:"0 1rem",textAlign:"center"}},
+    React.createElement("div",{style:{fontSize:32,marginBottom:12}},"🔐"),
+    React.createElement("div",{style:{fontSize:18,fontWeight:500,marginBottom:6}},t.adminLogin),
+    React.createElement("p",{style:{fontSize:13,color:"var(--color-text-secondary)",marginBottom:"1.5rem"}},t.adminLoginSub),
+    React.createElement("input",{type:"password",value:pw,onChange:e=>setPw(e.target.value),onKeyDown:e=>e.key==="Enter"&&login(),placeholder:"••••••••",style:{marginBottom:10}}),
+    pwErr&&React.createElement("div",{style:{fontSize:13,color:"#A32D2D",marginBottom:10}},t.adminWrongPass),
+    React.createElement("button",{onClick:login,style:{width:"100%",background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:14,cursor:"pointer"}},t.adminLoginBtn)
+  );
+  const aiD=feedback.filter(f=>f.autoDispatched);
+  let vis=tab==="ai"?aiD:feedback;
+  if(fStatus!=="all") vis=vis.filter(f=>f.status===fStatus);
+  if(fCat!=="all") vis=vis.filter(f=>f.category===fCat);
+  if(fPri!=="all") vis=vis.filter(f=>f.priority===fPri);
+  return React.createElement("div",{style:{maxWidth:960,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.25rem"}},
+      React.createElement("div",null,React.createElement("div",{style:{fontSize:22,fontWeight:500}},t.adminTitle),React.createElement("div",{style:{fontSize:13,color:"var(--color-text-secondary)"}},feedback.length," ",t.adminSub," · ",feedback.filter(f=>f.status==="open").length," ",t.adminOpen," · ",React.createElement("span",{style:{color:"#1D9E75",fontWeight:500}},aiD.length," ",t.adminAI))),
+      React.createElement("button",{onClick:()=>setAuthed(false),style:{fontSize:12,color:"var(--color-text-secondary)",background:"none",border:"0.5px solid var(--color-border-tertiary)",borderRadius:8,padding:"6px 12px",cursor:"pointer"}},t.adminLogout)
+    ),
+    React.createElement("div",{style:{display:"flex",gap:0,marginBottom:"1.25rem",border:"0.5px solid var(--color-border-tertiary)",borderRadius:8,overflow:"hidden",width:"fit-content"}},
+      [{id:"cases",label:t.allCases},{id:"ai",label:"🤖 "+t.aiDispatched+" ("+aiD.length+")"},{id:"analytics",label:"📊 "+t.analyticsTitle}].map(tb=>
+        React.createElement("button",{key:tb.id,onClick:()=>setTab(tb.id),style:{padding:"7px 16px",border:"none",borderRight:tb.id!=="analytics"?"0.5px solid var(--color-border-tertiary)":"none",background:tab===tb.id?"#185FA5":"var(--color-background-primary)",color:tab===tb.id?"#fff":"var(--color-text-secondary)",fontSize:13,cursor:"pointer",fontWeight:tab===tb.id?500:400}},tb.label)
+      )
+    ),
+    tab==="analytics"&&React.createElement(AnalyticsPage,{feedback,t}),
+    tab!=="analytics"&&React.createElement("div",null,
+      React.createElement("div",{style:{display:"flex",gap:8,flexWrap:"wrap",marginBottom:"1.25rem"}},
+        React.createElement("select",{value:fStatus,onChange:e=>setFStatus(e.target.value),style:{fontSize:13,height:"auto",width:"auto"}},React.createElement("option",{value:"all"},t.filterAll),React.createElement("option",{value:"open"},t.open),React.createElement("option",{value:"in-progress"},t.inProgress),React.createElement("option",{value:"resolved"},t.resolved)),
+        React.createElement("select",{value:fCat,onChange:e=>setFCat(e.target.value),style:{fontSize:13,height:"auto",width:"auto"}},React.createElement("option",{value:"all"},t.allCategories),CATEGORIES.map(c=>React.createElement("option",{key:c,value:c},c))),
+        React.createElement("select",{value:fPri,onChange:e=>setFPri(e.target.value),style:{fontSize:13,height:"auto",width:"auto"}},React.createElement("option",{value:"all"},t.allPriorities),["low","medium","high"].map(p=>React.createElement("option",{key:p,value:p},t[p]||p)))
+      ),
+      React.createElement("div",{style:{border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-lg)",overflow:"hidden"}},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1.6fr 1fr 0.6fr 0.7fr 0.7fr",padding:"8px 14px",background:"var(--color-background-secondary)",fontSize:12,fontWeight:500,color:"var(--color-text-secondary)",borderBottom:"0.5px solid var(--color-border-tertiary)"}},"Case",React.createElement("span",null,t.category),React.createElement("span",null,t.priority),React.createElement("span",null,t.status),React.createElement("span",null,t.submitted)),
+        vis.length===0&&React.createElement("div",{style:{padding:"2rem",textAlign:"center",fontSize:13,color:"var(--color-text-secondary)"}},"No cases match your filters."),
+        vis.map((f,i)=>React.createElement("div",{key:f.id,onClick:()=>{setSelected(f);setNewStatus(f.status);setNewAssignee(f.assignee);},style:{display:"grid",gridTemplateColumns:"1.6fr 1fr 0.6fr 0.7fr 0.7fr",padding:"10px 14px",cursor:"pointer",borderBottom:i<vis.length-1?"0.5px solid var(--color-border-tertiary)":"none",background:selected?.id===f.id?"var(--color-background-secondary)":"var(--color-background-primary)"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:13,fontWeight:500,marginBottom:1,display:"flex",alignItems:"center",gap:5}},f.subject,f.autoDispatched&&React.createElement("span",{style:{fontSize:10,background:"#1D9E75",color:"#fff",padding:"1px 5px",borderRadius:8}},"AI")),
+            React.createElement("div",{style:{fontSize:11,color:"var(--color-text-tertiary)"}},f.id," · Blk ",f.block)
+          ),
+          React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)",alignSelf:"center"}},CAT_ICONS[f.category]," ",f.category),
+          React.createElement("div",{style:{alignSelf:"center"}},React.createElement("span",{style:{fontSize:11,background:PRIORITY_BG[f.priority],color:PRIORITY_TEXT[f.priority],padding:"2px 8px",borderRadius:5,fontWeight:500,textTransform:"capitalize"}},t[f.priority]||f.priority)),
+          React.createElement("div",{style:{alignSelf:"center"}},React.createElement("span",{style:{fontSize:11,background:STATUS_BG[f.status],color:STATUS_TEXT[f.status],padding:"2px 8px",borderRadius:5,fontWeight:500,textTransform:"capitalize"}},f.status.replace("-"," "))),
+          React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)",alignSelf:"center"}},fmtDate(f.date))
+        ))
+      ),
+      selected&&React.createElement("div",{style:{marginTop:"1.5rem",background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:"var(--border-radius-lg)",padding:"1.25rem 1.5rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"1rem"}},
+          React.createElement("div",{style:{fontSize:16,fontWeight:500}},selected.subject),
+          React.createElement("button",{onClick:()=>setSelected(null),style:{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"var(--color-text-secondary)"}},"✕")
+        ),
+        selected.autoDispatched&&React.createElement("div",{style:{background:"#E1F5EE",border:"0.5px solid #9FE1CB",borderRadius:8,padding:"10px 14px",marginBottom:"1rem",fontSize:13,color:"#085041"}},DISPATCH_CONFIG[selected.category]?.actionLabel," → ",React.createElement("strong",null,selected.assignee)," · ",t.noAction),
+        React.createElement("p",{style:{fontSize:13,color:"var(--color-text-secondary)",marginBottom:"1rem",lineHeight:1.6}},selected.details),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"1rem"}},
+          React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:12,color:"var(--color-text-secondary)",marginBottom:5}},t.updateStatus),React.createElement("select",{value:newStatus,onChange:e=>setNewStatus(e.target.value),style:{width:"100%",fontSize:13,height:"auto"}},React.createElement("option",{value:"open"},t.open),React.createElement("option",{value:"in-progress"},t.inProgress),React.createElement("option",{value:"resolved"},t.resolved))),
+          React.createElement("div",null,React.createElement("label",{style:{display:"block",fontSize:12,color:"var(--color-text-secondary)",marginBottom:5}},t.assignTo),React.createElement("input",{value:newAssignee,onChange:e=>setNewAssignee(e.target.value),placeholder:"e.g. Eng Team A",style:{width:"100%",fontSize:13}}))
+        ),
+        React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",gap:8}},
+          React.createElement("button",{onClick:()=>setSelected(null),style:{background:"none",border:"0.5px solid var(--color-border-tertiary)",borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",color:"var(--color-text-secondary)"}},t.cancel),
+          React.createElement("button",{onClick:updateCase,style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"}},t.saveChanges)
+        )
+      )
+    )
+  );
+}
+
+function AnalyticsPage({feedback,t}){
+  const total=feedback.length;
+  const aiCount=feedback.filter(f=>f.autoDispatched).length;
+  const aiRate=total?Math.round(aiCount/total*100):0;
+  const byStatus={open:feedback.filter(f=>f.status==="open").length,"in-progress":feedback.filter(f=>f.status==="in-progress").length,resolved:feedback.filter(f=>f.status==="resolved").length};
+  const days14=[...Array(14)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-13+i); const key=d.toISOString().slice(0,10); return {label:d.toLocaleDateString("en-SG",{day:"2-digit",month:"short"}),count:feedback.filter(f=>f.date===key).length}; });
+  const maxDay=Math.max(...days14.map(d=>d.count),1);
+  const byCat=CATEGORIES.map((c,i)=>({cat:c,icon:CAT_ICONS[c],count:feedback.filter(f=>f.category===c).length,color:CAT_COLORS[i]})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count);
+  const maxCat=Math.max(...byCat.map(x=>x.count),1);
+  const byBlock=[...new Set(feedback.map(f=>f.block))].sort().map(b=>({block:b,count:feedback.filter(f=>f.block===b).length})).sort((a,b)=>b.count-a.count).slice(0,6);
+  const maxBlock=Math.max(...byBlock.map(x=>x.count),1);
+  return React.createElement("div",null,
+    React.createElement("div",{className:"four-col-grid",style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"1.25rem"}},
+      [{label:"Total Cases",value:total,color:"#185FA5"},{label:t.autoDispatchRate,value:aiRate+"%",color:"#1D9E75"},{label:t.avgResolution,value:"3.2",sub:t.hours,color:"#BA7517"},{label:t.resolved,value:byStatus.resolved,color:"#533AB7"}].map(m=>
+        React.createElement("div",{key:m.label,style:{background:"var(--color-background-secondary)",borderRadius:8,padding:"1rem",border:"0.5px solid var(--color-border-tertiary)"}},
+          React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",marginBottom:4}},m.label),
+          React.createElement("div",{style:{fontSize:22,fontWeight:500,color:m.color}},m.value),
+          m.sub&&React.createElement("div",{style:{fontSize:11,color:"var(--color-text-tertiary)"}},m.sub)
+        )
+      )
+    ),
+    React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,padding:"1.25rem",marginBottom:"1.25rem"}},
+      React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:"1rem"}},t.casesOverTime," (last 14 days)"),
+      React.createElement("div",{style:{display:"flex",alignItems:"flex-end",gap:3,height:80}},
+        days14.map((d,i)=>React.createElement("div",{key:i,style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}},
+          React.createElement("div",{style:{width:"100%",background:d.count>0?"#185FA5":"var(--color-background-secondary)",borderRadius:3,height:`${Math.max(d.count/maxDay*60,d.count>0?6:2)}px`,minHeight:2}}),
+          i%2===0&&React.createElement("div",{style:{fontSize:8,color:"var(--color-text-tertiary)",transform:"rotate(-30deg)",transformOrigin:"top left",whiteSpace:"nowrap",marginTop:3}},d.label)
+        ))
+      )
+    ),
+    React.createElement("div",{className:"two-col-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1.25rem",marginBottom:"1.25rem"}},
+      React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,padding:"1.25rem"}},
+        React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:"1rem"}},t.categoryBreakdown),
+        byCat.map(x=>React.createElement("div",{key:x.cat,style:{marginBottom:8}},
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},
+            React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)"}},x.icon," ",x.cat),
+            React.createElement("span",{style:{fontSize:12,fontWeight:500,color:x.color}},x.count)
+          ),
+          React.createElement("div",{style:{height:5,background:"var(--color-background-secondary)",borderRadius:3}},React.createElement("div",{style:{height:"100%",background:x.color,borderRadius:3,width:`${x.count/maxCat*100}%`}}))
+        ))
+      ),
+      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"1.25rem"}},
+        React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,padding:"1.25rem",flex:1}},
+          React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:"1rem"}},t.autoDispatchRate),
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:16}},
+            React.createElement("div",{style:{position:"relative",width:72,height:72,flexShrink:0}},
+              React.createElement("svg",{viewBox:"0 0 72 72",style:{transform:"rotate(-90deg)"}},
+                React.createElement("circle",{cx:"36",cy:"36",r:"26",fill:"none",stroke:"var(--color-background-secondary)",strokeWidth:"10"}),
+                React.createElement("circle",{cx:"36",cy:"36",r:"26",fill:"none",stroke:"#1D9E75",strokeWidth:"10",strokeDasharray:`${aiRate*1.634} 163.4`,strokeLinecap:"round"})
+              ),
+              React.createElement("div",{style:{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:"#1D9E75"}},aiRate+"%")
+            ),
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:13,fontWeight:500,marginBottom:4}},aiCount+" of "+total+" cases"),
+              React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)"}},t.ofCasesAI)
+            )
+          )
+        ),
+        React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,padding:"1.25rem",flex:1}},
+          React.createElement("div",{style:{fontSize:14,fontWeight:500,marginBottom:"1rem"}},t.casesByBlock),
+          byBlock.map(x=>React.createElement("div",{key:x.block,style:{marginBottom:7}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:2}},React.createElement("span",{style:{fontSize:12,color:"var(--color-text-secondary)"}},"Blk "+x.block),React.createElement("span",{style:{fontSize:12,fontWeight:500}},x.count)),
+            React.createElement("div",{style:{height:4,background:"var(--color-background-secondary)",borderRadius:2}},React.createElement("div",{style:{height:"100%",background:"#185FA5",borderRadius:2,width:`${x.count/maxBlock*100}%`}}))
+          ))
+        )
+      )
+    )
+  );
+}
+
+// ── Resident Demo ─────────────────────────────────────────────────────────────
+const DEMO_SCENARIOS = [
+  { id:"FB-2025-10021", label:"Lift stuck — Manual" },
+  { id:"FB-2025-10022", label:"Rubbish chute — AI" },
+  { id:"FB-2025-10023", label:"Renovation noise — Manual" },
+  { id:"FB-2025-10027", label:"Old sofa — AI" },
+  { id:"FB-2025-10030", label:"Clogged drain — Manual" },
+];
+const TC_QUICK_REPLIES = [
+  "Thank you for your feedback. We have noted your case and will attend to it shortly.",
+  "Our team has been dispatched and will arrive within the estimated timeframe.",
+  "We apologise for the inconvenience. The issue has been escalated to our maintenance team.",
+  "Your case has been resolved. Please let us know if the issue persists.",
+  "We require more information. Could you provide the exact location?",
+];
+
+function ResidentDemoPage({feedback,onToast}){
+  const [selectedId,setSelectedId]=useState("FB-2025-10021");
+  const [conversations,setConversations]=useState({});
+  const [autoTriggered,setAutoTriggered]=useState({});
+  const [tcInput,setTcInput]=useState(""); const [resInput,setResInput]=useState("");
+  const [aiSuggestions,setAiSuggestions]=useState([]); const [loadingSugg,setLoadingSugg]=useState(false);
+  const [autoLoading,setAutoLoading]=useState(false);
+  const [activePanel,setActivePanel]=useState("both");
+  const tcRef=useRef(null); const resRef=useRef(null);
+  const selectedCase=feedback.find(f=>f.id===selectedId);
+  const thread=conversations[selectedId]||[];
+  const isAI=selectedCase?.autoDispatched;
+
+  useEffect(()=>{
+    if(!selectedCase||!selectedCase.autoDispatched||autoTriggered[selectedId]||(conversations[selectedId]||[]).length>0) return;
+    setAutoTriggered(prev=>({...prev,[selectedId]:true}));
+    triggerAutoReply(selectedCase);
+  },[selectedId,selectedCase]);
+
+  useEffect(()=>{ tcRef.current?.scrollIntoView({behavior:"smooth"}); },[thread,autoLoading]);
+  useEffect(()=>{ resRef.current?.scrollIntoView({behavior:"smooth"}); },[thread]);
+
+  async function triggerAutoReply(caseData){
+    setAutoLoading(true);
+    const cfg=DISPATCH_CONFIG[caseData.category];
+    await new Promise(r=>setTimeout(r,1400));
+    const msg={id:Date.now(),sender:"tc",senderLabel:"Town Council (Automated)",auto:true,text:`Hi${caseData.anonymous?"":" "+caseData.name.split(" ")[0]}, we've received your feedback on "${caseData.subject}" (Ref: ${caseData.id}). ${cfg?cfg.actionLabel+" — "+cfg.label+" assigned. ETA: "+cfg.etaLabel(caseData.priority)+".":"Our team has been notified."} Thank you.`,time:new Date().toISOString()};
+    setConversations(prev=>({...prev,[caseData.id]:[msg]}));
+    onToast({title:"Auto-reply sent 🤖",body:"SMS auto-sent to "+(caseData.contact||"resident")+" for "+caseData.id});
+    setAutoLoading(false);
+  }
+
+  async function fetchSuggestions(){
+    setLoadingSugg(true); setAiSuggestions([]);
+    try{
+      const ctx=`TC officer replying to resident feedback. Case: ${selectedCase.subject} (${selectedCase.category}, ${selectedCase.priority}, ${selectedCase.status}). Details: ${selectedCase.details}. Thread: ${thread.map(m=>m.sender+": "+m.text).join(" | ")}. Generate exactly 3 short professional reply options. Return ONLY a JSON array of 3 strings, no markdown.`;
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:ctx}]})});
+      const data=await res.json();
+      const parsed=JSON.parse(data.content?.map(c=>c.text||"").join("").trim());
+      if(Array.isArray(parsed)) setAiSuggestions(parsed.slice(0,3));
+    }catch(e){setAiSuggestions(TC_QUICK_REPLIES.slice(0,3));}
+    setLoadingSugg(false);
+  }
+
+  function selectCase(id){setSelectedId(id);setTcInput("");setResInput("");setAiSuggestions([]);}
+  function sendTC(text){
+    const msg=text||tcInput.trim(); if(!msg) return;
+    setConversations(prev=>({...prev,[selectedId]:[...(prev[selectedId]||[]),{id:Date.now(),sender:"tc",senderLabel:"Town Council",text:msg,time:new Date().toISOString()}]}));
+    setTcInput(""); setAiSuggestions([]);
+    onToast({title:"Reply sent",body:"SMS sent to "+(selectedCase?.name||"resident")+": \""+msg.slice(0,40)+(msg.length>40?"…":"")+"\""}),
+    (()=>{})()
+  }
+  function sendRes(){
+    const msg=resInput.trim(); if(!msg) return;
+    setConversations(prev=>({...prev,[selectedId]:[...(prev[selectedId]||[]),{id:Date.now(),sender:"resident",senderLabel:selectedCase?.anonymous?"Anonymous Resident":selectedCase?.name||"Resident",text:msg,time:new Date().toISOString()}]}));
+    setResInput("");
+  }
+  const cfg=selectedCase&&DISPATCH_CONFIG[selectedCase.category];
+
+  function MsgBubble({msg,side}){
+    const isTC=msg.sender==="tc";
+    return React.createElement("div",{style:{display:"flex",justifyContent:side==="right"?"flex-end":"flex-start"}},
+      React.createElement("div",{style:{maxWidth:"82%",padding:"8px 11px",borderRadius:side==="right"?"12px 12px 3px 12px":"12px 12px 12px 3px",background:side==="right"?isTC?"#185FA5":"#378ADD":"var(--color-background-secondary)",color:side==="right"?"#fff":"var(--color-text-primary)",fontSize:12,lineHeight:1.5}},
+        msg.auto&&React.createElement("div",{style:{fontSize:10,marginBottom:3,color:"rgba(255,255,255,0.75)"}},"🤖 Automated · ",msg.senderLabel),
+        !msg.auto&&msg.sender==="tc"&&side==="left"&&React.createElement("div",{style:{fontSize:10,fontWeight:500,color:"#185FA5",marginBottom:2}},"🏢 Town Council"),
+        !isTC&&side==="left"&&React.createElement("div",{style:{fontSize:10,fontWeight:500,marginBottom:2,opacity:0.7}},msg.senderLabel),
+        msg.text,
+        React.createElement("div",{style:{fontSize:10,opacity:0.55,marginTop:3,textAlign:"right"}},fmtTime(msg.time))
+      )
+    );
+  }
+
+  return React.createElement("div",{style:{maxWidth:960,margin:"0 auto",padding:"2rem 1rem"}},
+    React.createElement("div",{style:{marginBottom:"1.5rem"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:4}},
+        React.createElement("div",{style:{fontSize:22,fontWeight:500}},"Resident Communication Demo"),
+        React.createElement("span",{style:{fontSize:11,background:"#E6F1FB",color:"#042C53",border:"0.5px solid #B5D4F4",padding:"2px 10px",borderRadius:20,fontWeight:500}},"DEMO")
+      ),
+      React.createElement("p",{style:{fontSize:14,color:"var(--color-text-secondary)"}},
+        "🤖 ",React.createElement("strong",null,"AI-dispatched cases")," auto-send an SMS confirmation instantly. ",
+        React.createElement("strong",null,"Manual cases")," wait for you to type a reply."
+      )
+    ),
+    React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.25rem"}},
+      DEMO_SCENARIOS.map(s=>{
+        const fb=feedback.find(f=>f.id===s.id);
+        return React.createElement("button",{key:s.id,onClick:()=>selectCase(s.id),style:{padding:"6px 14px",border:selectedId===s.id?"1.5px solid #185FA5":"0.5px solid var(--color-border-tertiary)",borderRadius:20,background:selectedId===s.id?"#E6F1FB":"var(--color-background-primary)",color:selectedId===s.id?"#042C53":"var(--color-text-secondary)",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:5}},
+          fb?.autoDispatched?React.createElement("span",{style:{fontSize:10,background:"#1D9E75",color:"#fff",padding:"1px 5px",borderRadius:8}},"🤖 AUTO"):React.createElement("span",{style:{fontSize:10,background:"#FAEEDA",color:"#412402",padding:"1px 5px",borderRadius:8}},"✏️ Manual"),
+          s.label
+        );
+      })
+    ),
+    selectedCase&&React.createElement("div",null,
+      React.createElement("div",{style:{background:"var(--color-background-secondary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:8,padding:"10px 14px",marginBottom:"1.25rem",display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}},
+        React.createElement("div",{style:{flex:1}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:500,marginBottom:2}},selectedCase.subject),
+          React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)"}},selectedCase.id," · ",CAT_ICONS[selectedCase.category]," ",selectedCase.category," · Blk ",selectedCase.block," · ",selectedCase.anonymous?"Anonymous":selectedCase.name)
+        ),
+        React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}},
+          isAI&&React.createElement("span",{style:{fontSize:10,background:"#1D9E75",color:"#fff",padding:"2px 7px",borderRadius:8,fontWeight:500}},"🤖 AI → ",selectedCase.assignee),
+          React.createElement("span",{style:{fontSize:11,background:STATUS_BG[selectedCase.status],color:STATUS_TEXT[selectedCase.status],padding:"2px 9px",borderRadius:6,fontWeight:500,border:`0.5px solid ${STATUS_COLORS[selectedCase.status]}`}},selectedCase.status.replace("-"," ")),
+          React.createElement("span",{style:{fontSize:11,background:PRIORITY_BG[selectedCase.priority],color:PRIORITY_TEXT[selectedCase.priority],padding:"2px 9px",borderRadius:6,fontWeight:500,textTransform:"capitalize"}},selectedCase.priority)
+        )
+      ),
+      React.createElement("div",{style:{display:"flex",gap:0,marginBottom:"1rem",border:"0.5px solid var(--color-border-tertiary)",borderRadius:8,overflow:"hidden",width:"fit-content"}},
+        [{id:"both",label:"Split View"},{id:"tc",label:"🏢 TC View"},{id:"resident",label:"👤 Resident View"}].map(p=>
+          React.createElement("button",{key:p.id,onClick:()=>setActivePanel(p.id),style:{padding:"6px 14px",border:"none",borderRight:p.id!=="resident"?"0.5px solid var(--color-border-tertiary)":"none",background:activePanel===p.id?"#185FA5":"var(--color-background-primary)",color:activePanel===p.id?"#fff":"var(--color-text-secondary)",fontSize:12,cursor:"pointer",fontWeight:activePanel===p.id?500:400}},p.label)
+        )
+      ),
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:activePanel==="both"?"1fr 1fr":"1fr",gap:16}},
+        (activePanel==="both"||activePanel==="tc")&&React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,overflow:"hidden",display:"flex",flexDirection:"column"}},
+          React.createElement("div",{style:{padding:"10px 14px",background:isAI?"#1D9E75":"#185FA5",display:"flex",alignItems:"center",gap:8,justifyContent:"space-between"}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+              React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}},isAI?"🤖":"🏢"),
+              React.createElement("div",null,
+                React.createElement("div",{style:{fontSize:13,fontWeight:500,color:"#fff"}},isAI?"AI Auto-Reply":"Town Council Officer"),
+                React.createElement("div",{style:{fontSize:10,color:"rgba(255,255,255,0.75)"}},isAI?"Automatically handles this case":"Manual reply required")
+              )
+            ),
+            React.createElement("span",{style:{fontSize:10,background:"rgba(255,255,255,0.2)",color:"#fff",padding:"2px 8px",borderRadius:20,fontWeight:500}},isAI?"🤖 AUTO":"✏️ MANUAL")
+          ),
+          React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"12px",display:"flex",flexDirection:"column",gap:8,minHeight:200,maxHeight:280}},
+            thread.length===0&&!autoLoading&&!isAI&&React.createElement("div",{style:{textAlign:"center",fontSize:12,color:"var(--color-text-tertiary)",padding:"2rem 0"}},"No messages yet. Type a reply below."),
+            autoLoading&&React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",padding:"2rem 0",gap:10}},
+              React.createElement("div",{style:{display:"flex",gap:5}},[0,1,2].map(i=>React.createElement("div",{key:i,style:{width:8,height:8,borderRadius:"50%",background:"#1D9E75",animation:`bounce 0.9s ${i*0.2}s infinite`}}))),
+              React.createElement("div",{style:{fontSize:12,color:"#1D9E75",fontWeight:500}},"AI composing auto-reply…")
+            ),
+            thread.map(msg=>React.createElement(MsgBubble,{key:msg.id,msg,side:msg.sender==="tc"?"right":"left"})),
+            React.createElement("div",{ref:tcRef})
+          ),
+          React.createElement("div",{style:{padding:"8px 12px",borderTop:"0.5px solid var(--color-border-tertiary)",background:"var(--color-background-secondary)"}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
+              React.createElement("div",{style:{fontSize:11,color:"var(--color-text-secondary)",fontWeight:500}},"🤖 AI-suggested replies"),
+              React.createElement("button",{onClick:fetchSuggestions,disabled:loadingSugg,style:{fontSize:11,color:"#185FA5",background:"none",border:"none",cursor:"pointer"}},loadingSugg?"Generating…":"Refresh")
+            ),
+            (aiSuggestions.length>0?aiSuggestions:TC_QUICK_REPLIES.slice(0,2)).map((s,i)=>
+              React.createElement("button",{key:i,onClick:()=>setTcInput(s),style:{display:"block",width:"100%",marginBottom:4,fontSize:11,padding:"5px 9px",border:`0.5px solid ${aiSuggestions.length>0?"#B5D4F4":"var(--color-border-tertiary)"}`,borderRadius:6,background:aiSuggestions.length>0?"#E6F1FB":"var(--color-background-primary)",color:aiSuggestions.length>0?"#042C53":"var(--color-text-secondary)",cursor:"pointer",textAlign:"left",lineHeight:1.4}},aiSuggestions.length>0?"✨ ":"",s.slice(0,60),s.length>60?"…":"")
+            )
+          ),
+          React.createElement("div",{style:{padding:"10px 12px",borderTop:"0.5px solid var(--color-border-tertiary)",display:"flex",gap:8}},
+            React.createElement("textarea",{value:tcInput,onChange:e=>setTcInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),sendTC()),placeholder:isAI?"Type a follow-up… (Enter to send)":"Type reply to resident… (Enter to send)",style:{flex:1,fontSize:12,minHeight:36,maxHeight:80,resize:"none"}}),
+            React.createElement("button",{onClick:()=>sendTC(),disabled:!tcInput.trim(),style:{background:"#185FA5",color:"#fff",border:"none",borderRadius:8,padding:"0 14px",fontSize:13,cursor:"pointer",opacity:!tcInput.trim()?0.4:1,flexShrink:0}},"Send")
+          )
+        ),
+        (activePanel==="both"||activePanel==="resident")&&React.createElement("div",{style:{background:"var(--color-background-primary)",border:"0.5px solid var(--color-border-tertiary)",borderRadius:12,overflow:"hidden",display:"flex",flexDirection:"column"}},
+          React.createElement("div",{style:{padding:"10px 14px",background:"var(--color-background-secondary)",borderBottom:"0.5px solid var(--color-border-tertiary)",display:"flex",alignItems:"center",gap:8}},
+            React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"#E6F1FB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}},"👤"),
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:13,fontWeight:500}},selectedCase.anonymous?"Anonymous Resident":selectedCase.name),
+              React.createElement("div",{style:{fontSize:10,color:"var(--color-text-secondary)"}},"Blk "+selectedCase.block+(selectedCase.unit?" "+selectedCase.unit:""+(selectedCase.contact?" · "+selectedCase.contact:"")))
+            )
+          ),
+          React.createElement("div",{style:{padding:"10px 12px",background:"#FAEEDA",borderBottom:"0.5px solid #FAC775"}},
+            React.createElement("div",{style:{fontSize:10,color:"#412402",fontWeight:500,marginBottom:3}},"Original feedback · "+fmtDate(selectedCase.date)),
+            React.createElement("div",{style:{fontSize:12,color:"#412402",lineHeight:1.5}},selectedCase.details),
+            isAI&&cfg&&React.createElement("div",{style:{marginTop:6,fontSize:11,color:cfg.color}},cfg.icon," Auto-dispatched to ",selectedCase.assignee," · ETA: ",cfg.etaLabel(selectedCase.priority))
+          ),
+          React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"12px",display:"flex",flexDirection:"column",gap:8,minHeight:160,maxHeight:240}},
+            thread.filter(m=>m.sender==="tc").length===0&&!autoLoading&&React.createElement("div",{style:{textAlign:"center",fontSize:12,color:"var(--color-text-tertiary)",padding:"1rem 0"}},isAI?"⏳ Auto-reply being prepared…":"Waiting for TC officer to reply…"),
+            autoLoading&&React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",padding:"1rem 0",gap:6}},
+              React.createElement("div",{style:{display:"flex",gap:4}},[0,1,2].map(i=>React.createElement("div",{key:i,style:{width:6,height:6,borderRadius:"50%",background:"var(--color-text-tertiary)",animation:`bounce 0.9s ${i*0.2}s infinite`}}))),
+              React.createElement("div",{style:{fontSize:12,color:"var(--color-text-secondary)"}},"Waiting for auto-reply…")
+            ),
+            thread.map(msg=>React.createElement(MsgBubble,{key:msg.id,msg,side:msg.sender==="resident"?"right":"left"})),
+            React.createElement("div",{ref:resRef})
+          ),
+          React.createElement("div",{style:{padding:"10px 12px",borderTop:"0.5px solid var(--color-border-tertiary)",display:"flex",gap:8}},
+            React.createElement("input",{value:resInput,onChange:e=>setResInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&sendRes(),placeholder:"Reply as resident… (Enter to send)",style:{flex:1,fontSize:12}}),
+            React.createElement("button",{onClick:sendRes,disabled:!resInput.trim(),style:{background:"#378ADD",color:"#fff",border:"none",borderRadius:8,padding:"0 14px",fontSize:13,cursor:"pointer",opacity:!resInput.trim()?0.4:1,flexShrink:0}},"Send")
+          )
+        )
+      ),
+      React.createElement("div",{style:{marginTop:"1rem",padding:"10px 14px",background:"var(--color-background-secondary)",borderRadius:8,fontSize:12,color:"var(--color-text-secondary)"}},
+        isAI?React.createElement("span",null,"🤖 ",React.createElement("strong",{style:{color:"#1D9E75"}},"AI-dispatched:")," Confirmation SMS auto-sent to resident. You can still type follow-ups."):React.createElement("span",null,"✏️ ",React.createElement("strong",{style:{color:"#185FA5"}},"Manual:")," Type your reply or click Refresh for AI suggestions."),
+        " · 💬 ",React.createElement("strong",null,"Resident panel:")," Type a follow-up to simulate the resident replying."
+      )
+    )
+  );
+}
+
+// ── App Root ──────────────────────────────────────────────────────────────────
+function App(){
+  const [page,setPage]=useState("home");
+  const [feedback,setFeedback]=useState(SEED_FEEDBACK);
+  const [announcements]=useState(SEED_ANNOUNCEMENTS);
+  const [chatOpen,setChatOpen]=useState(false);
+  const [chatSeen,setChatSeen]=useState(false);
+  const [lang,setLang]=useState("en");
+  const [user,setUser]=useState(null);
+  const [notifications,setNotifications]=useState([]);
+  const [toast,setToast]=useState(null);
+  const t=T[lang]||T.en;
+
+  function handleSubmit(fb){
+    setFeedback(prev=>[fb,...prev]);
+    const notifs=[{id:Date.now(),type:"submitted",title:"Case submitted",body:"Ref: "+fb.id+" — "+fb.subject,time:new Date().toISOString(),read:false}];
+    if(fb.autoDispatched) notifs.push({id:Date.now()+1,type:"dispatched",title:"Team dispatched",body:(DISPATCH_CONFIG[fb.category]?.label||"Team")+" assigned to "+fb.id,time:new Date().toISOString(),read:false});
+    setNotifications(prev=>[...notifs,...prev]);
+    if(fb.autoDispatched) setToast({title:t.notifTitle,body:t.notifSMS+" "+(fb.contact||"your number")+" — "+(DISPATCH_CONFIG[fb.category]?.label||"Team")+" dispatched"});
+  }
+
+  return React.createElement("div",{style:{minHeight:"100vh",background:"var(--color-background-tertiary)"}},
+    React.createElement(NavBar,{page,setPage,lang,setLang,user,notifications,onMarkAll:()=>setNotifications(prev=>prev.map(n=>({...n,read:true}))),t}),
+    page==="home"&&React.createElement(HomePage,{setPage,feedback,announcements,t}),
+    page==="submit"&&React.createElement(SubmitPage,{onSubmit:handleSubmit,user,t}),
+    page==="track"&&React.createElement(TrackPage,{feedback,t}),
+    page==="announcements"&&React.createElement(AnnouncementsPage,{announcements,t}),
+    page==="mycases"&&user&&React.createElement(MyCasesPage,{user,feedback,t}),
+    page==="login"&&React.createElement(LoginPage,{onLogin:u=>{setUser(u);setPage("home");},t}),
+    page==="admin"&&React.createElement(AdminPage,{feedback,setFeedback,onToast:setToast,t}),
+    page==="demo"&&React.createElement(ResidentDemoPage,{feedback,onToast:setToast}),
+    React.createElement("button",{onClick:()=>{setChatOpen(o=>!o);setChatSeen(true);},title:"Chat with HDB Assistant",style:{position:"fixed",bottom:20,right:20,width:52,height:52,borderRadius:"50%",background:"#185FA5",color:"#fff",border:"none",cursor:"pointer",fontSize:22,display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,boxShadow:"0 4px 16px rgba(24,95,165,0.35)"}},
+      "💬",!chatSeen&&React.createElement("span",{style:{position:"absolute",top:4,right:4,width:10,height:10,borderRadius:"50%",background:"#E24B4A",border:"2px solid #fff"}})
+    ),
+    React.createElement(AIChat,{open:chatOpen,onClose:()=>setChatOpen(false)}),
+    toast&&React.createElement(NotifToast,{toast,onClose:()=>setToast(null)})
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>
